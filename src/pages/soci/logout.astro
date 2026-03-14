@@ -1,0 +1,9 @@
+---
+export const prerender = false;
+
+// Cancella i cookie di autenticazione
+Astro.cookies.delete('sb-access-token', { path: '/' });
+Astro.cookies.delete('sb-refresh-token', { path: '/' });
+
+return Astro.redirect('/');
+---

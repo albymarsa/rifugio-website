@@ -1,0 +1,41 @@
+---
+import Layout from '../layouts/Layout.astro';
+import BookingForm from '../components/BookingForm.astro';
+---
+
+<Layout title="Prenota — Rifugio Alpine">
+  <section class="page-header">
+    <div class="container">
+      <span class="section-label">Prenotazioni</span>
+      <h1>Prenota il tuo posto</h1>
+      <p class="page-header__desc">
+        Compila il modulo qui sotto per richiedere una prenotazione.
+        Ti confermeremo la disponibilità via email entro 48 ore.
+      </p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <BookingForm />
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .page-header {
+    padding-top: calc(64px + 4rem);
+    padding-bottom: 2rem;
+    background-color: var(--color-off-white);
+  }
+
+  .page-header h1 {
+    margin-bottom: 1rem;
+  }
+
+  .page-header__desc {
+    font-size: 1.1rem;
+    color: var(--color-gray);
+    max-width: 560px;
+  }
+</style>

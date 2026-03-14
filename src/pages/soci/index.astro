@@ -1,0 +1,259 @@
+---
+export const prerender = false;
+
+import SociLayout from '../../layouts/SociLayout.astro';
+import MemberCard from '../../components/soci/MemberCard.astro';
+import MemberForm from '../../components/soci/MemberForm.astro';
+import { createClient } from '@supabase/supabase-js';
+
+const user = Astro.locals.user;
+if (!user) {
+  return Astro.redirect('/soci/login');
+}
+
+// Crea client con la sessione dell'utente
+const supabase = createClient(
+  import.meta.env.PUBLIC_SUPABASE_URL,
+  import.meta.env.PUBLIC_SUPABASE_ANON_KEY
+);
+
+const accessToken = Astro.cookies.get('sb-access-token')?.value;
+const refreshToken = Astro.cookies.get('sb-refresh-token')?.value;
+
+let sessionError = null;
+if (accessToken && refreshToken) {
+  const { error: sessErr } = await supabase.auth.setSession({
+    access_token: accessToken,
+    refresh_token: refreshToken,
+  });
+  if (sessErr) {
+    console.error('[Dashboard] Errore sessione:', sessErr.message);
+    sessionError = sessErr;
+  }
+}
+
+// Carica i soci registrati dall'utente
+let members: any[] = [];
+let error: any = null;
+let errorMessage = '';
+
+if (sessionError) {
+  // Sessione scaduta o invalida - redirect al login
+  Astro.cookies.delete('sb-access-token', { path: '/' });
+  Astro.cookies.delete('sb-refresh-token', { path: '/' });
+  return Astro.redirect('/soci/login');
+}
+
+const result = await supabase
+  .from('soci')
+  .select('*')
+  .eq('registrato_da', user.id)
+  .order('created_at');
+
+members = result.data || [];
+error = result.error;
+if (error) {
+  console.error('[Dashboard] Errore query soci:', error.message, error.code, error.details);
+  errorMessage = error.message;
+}
+
+// Verifica se l'utente e' un fondatore
+const isFounder = members?.some((m: any) => m.tipo_socio === 'fondatore' && m.email === user.email);
+---
+
+<SociLayout title="Dashboard" showBackLink={false}>
+  <div class="dashboard">
+    <div class="dashboard__header">
+      <div>
+        <div class="section-label">Area Soci</div>
+        <h1 class="section-title">La tua dashboard</h1>
+      </div>
+      {isFounder && (
+        <a href="/soci/admin" class="btn btn-outline">
+          Gestione soci
+        </a>
+      )}
+    </div>
+
+    {error && (
+      <div class="alert alert--error">
+        Errore nel caricamento dei dati: {errorMessage || 'Errore sconosciuto'}
+      </div>
+    )}
+
+    {members && members.length === 0 && (
+      <div class="dashboard__empty">
+        <p>Non hai ancora inserito i tuoi dati di socio.</p>
+        <p>Compila il form qui sotto per completare l'iscrizione.</p>
+      </div>
+    )}
+
+    <!-- Lista soci registrati -->
+    <div id="members-container">
+      {members && members.map((member) => (
+        <div class="member-wrapper" data-member-id={member.id}>
+          <div class="member-view">
+            <MemberCard member={member} />
+          </div>
+        </div>
+      ))}
+    </div>
+
+    <!-- Bottone aggiungi componente -->
+    <div class="dashboard__actions">
+      <button id="add-member-btn" class="btn btn-outline">
+        + Aggiungi componente del gruppo
+      </button>
+    </div>
+
+    <!-- Form nuovo componente -->
+    <div id="new-member-container" hidden>
+      <h2 class="dashboard__subtitle">Nuovo componente del gruppo</h2>
+      <MemberForm formId="new-member-form" submitLabel="Aggiungi" showCancel={true} />
+    </div>
+  </div>
+</SociLayout>
+
+<script>
+  import { createClient } from '@supabase/supabase-js';
+
+  const supabase = createClient(
+    import.meta.env.PUBLIC_SUPABASE_URL,
+    import.meta.env.PUBLIC_SUPABASE_ANON_KEY
+  );
+
+  // Recupera sessione dai cookie
+  function getCookie(name: string): string | null {
+    const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+    return match ? match[2] : null;
+  }
+
+  const accessToken = getCookie('sb-access-token');
+  const refreshToken = getCookie('sb-refresh-token');
+
+  if (accessToken && refreshToken) {
+    supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
+  }
+
+  // === Aggiungi nuovo componente ===
+  const addBtn = document.getElementById('add-member-btn')!;
+  const newContainer = document.getElementById('new-member-container')!;
+  const newForm = document.getElementById('new-member-form') as HTMLFormElement;
+
+  addBtn.addEventListener('click', () => {
+    newContainer.hidden = false;
+    addBtn.hidden = true;
+    newContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+
+  newForm.querySelector('[data-cancel]')?.addEventListener('click', () => {
+    newContainer.hidden = true;
+    addBtn.hidden = false;
+    newForm.reset();
+  });
+
+  newForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    if (!newForm.checkValidity()) {
+      newForm.reportValidity();
+      return;
+    }
+
+    const submitBtn = newForm.querySelector('button[type="submit"]') as HTMLButtonElement;
+    submitBtn.textContent = 'Salvataggio...';
+    submitBtn.disabled = true;
+
+    const { data: { user } } = await supabase.auth.getUser();
+
+    const formData = new FormData(newForm);
+    const memberData = {
+      nome: formData.get('nome'),
+      cognome: formData.get('cognome'),
+      email: formData.get('email'),
+      telefono: formData.get('telefono') || null,
+      data_nascita: formData.get('data_nascita') || null,
+      luogo_nascita: formData.get('luogo_nascita') || null,
+      codice_fiscale: formData.get('codice_fiscale') || null,
+      indirizzo_residenza: formData.get('indirizzo_residenza') || null,
+      tipo_documento: formData.get('tipo_documento') || null,
+      numero_documento: formData.get('numero_documento') || null,
+      registrato_da: user?.id,
+      tipo_socio: 'ordinario',
+    };
+
+    const { error } = await supabase.from('soci').insert([memberData]);
+
+    const msgEl = newForm.querySelector('[data-message]') as HTMLElement;
+
+    if (error) {
+      msgEl.textContent = 'Errore: ' + error.message;
+      msgEl.setAttribute('data-type', 'error');
+      msgEl.hidden = false;
+      submitBtn.textContent = 'Aggiungi';
+      submitBtn.disabled = false;
+      return;
+    }
+
+    // Ricarica la pagina per mostrare il nuovo membro
+    window.location.reload();
+  });
+
+  // === Modifica socio ===
+  document.querySelectorAll('[data-edit]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const memberId = (btn as HTMLElement).getAttribute('data-edit');
+      // Per semplicita', ricarica la pagina con un parametro di modifica
+      // In futuro si puo' implementare editing inline
+      alert('Funzionalita\' di modifica in arrivo. Per ora contatta un fondatore per modifiche.');
+    });
+  });
+</script>
+
+<style>
+  .dashboard {
+    padding-top: 1rem;
+  }
+
+  .dashboard__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .dashboard__empty {
+    padding: 3rem 2rem;
+    background: var(--color-off-white);
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+
+  .dashboard__empty p {
+    max-width: none;
+    color: var(--color-gray);
+    margin-bottom: 0.5rem;
+  }
+
+  .dashboard__actions {
+    margin-top: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  .dashboard__subtitle {
+    font-size: 1.3rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .alert--error {
+    background-color: #fdf0f0;
+    color: #9b1c1c;
+    border-left: 3px solid #9b1c1c;
+    padding: 1rem 1.5rem;
+    margin-bottom: 1.5rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+  }
+</style>

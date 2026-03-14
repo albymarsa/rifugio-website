@@ -1,0 +1,79 @@
+---
+interface Props {
+  title: string;
+  subtitle?: string;
+  cta?: { text: string; href: string };
+  image?: string;
+}
+
+const { title, subtitle, cta, image = '/images/hero.jpg' } = Astro.props;
+---
+
+<section class="hero">
+  <div class="hero__overlay"></div>
+  <div class="hero__content container">
+    <h1 class="hero__title">{title}</h1>
+    {subtitle && <p class="hero__subtitle">{subtitle}</p>}
+    {cta && <a href={cta.href} class="btn btn-primary hero__cta">{cta.text}</a>}
+  </div>
+</section>
+
+<style define:vars={{ bgImage: `url(${image})` }}>
+  .hero {
+    position: relative;
+    min-height: 85vh;
+    display: flex;
+    align-items: flex-end;
+    background-image: var(--bgImage);
+    background-size: cover;
+    background-position: center;
+    background-color: var(--color-dark);
+    margin-top: 64px;
+  }
+
+  .hero__overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      to top,
+      rgba(0, 0, 0, 0.6) 0%,
+      rgba(0, 0, 0, 0.1) 50%,
+      transparent 100%
+    );
+  }
+
+  .hero__content {
+    position: relative;
+    z-index: 1;
+    padding-bottom: 5rem;
+    max-width: 800px;
+  }
+
+  .hero__title {
+    color: var(--color-white);
+    font-size: clamp(2.5rem, 6vw, 4rem);
+    margin-bottom: 1rem;
+  }
+
+  .hero__subtitle {
+    color: rgba(255, 255, 255, 0.85);
+    font-size: clamp(1rem, 2vw, 1.3rem);
+    line-height: 1.6;
+    max-width: 560px;
+    margin-bottom: 2rem;
+  }
+
+  .hero__cta {
+    margin-top: 0.5rem;
+  }
+
+  @media (max-width: 768px) {
+    .hero {
+      min-height: 70vh;
+    }
+
+    .hero__content {
+      padding-bottom: 3rem;
+    }
+  }
+</style>

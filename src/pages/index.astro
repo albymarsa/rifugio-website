@@ -1,0 +1,22 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Hero from '../components/Hero.astro';
+import InfoSection from '../components/InfoSection.astro';
+import HowToArrive from '../components/HowToArrive.astro';
+import Rules from '../components/Rules.astro';
+import Gallery from '../components/Gallery.astro';
+import ContactBanner from '../components/ContactBanner.astro';
+---
+
+<Layout title="Rifugio Rosmini — Nel cuore delle montagne">
+  <Hero
+    title="Dove la montagna ti aspetta"
+    subtitle="25 posti letto a 1750 metri. Un rifugio autentico nel cuore delle Alpi, per chi cerca l'essenziale."
+    cta={{ text: "Prenota il tuo posto", href: "/prenota" }}
+  />
+  <InfoSection />
+  <HowToArrive />
+  <Gallery />
+  <Rules />
+  <ContactBanner />
+</Layout>

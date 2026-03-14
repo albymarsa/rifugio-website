@@ -1,0 +1,99 @@
+<section class="section section--alt">
+  <div class="container">
+    <span class="section-label">Galleria</span>
+    <h2 class="section-title">Scorci dal rifugio</h2>
+    <div class="gallery__grid">
+      <div class="gallery__item gallery__item--large">
+        <div class="gallery__placeholder">
+          <span>Foto panorama</span>
+        </div>
+      </div>
+      <div class="gallery__item">
+        <div class="gallery__placeholder">
+          <span>Foto interno</span>
+        </div>
+      </div>
+      <div class="gallery__item">
+        <div class="gallery__placeholder">
+          <span>Foto sentiero</span>
+        </div>
+      </div>
+      <div class="gallery__item">
+        <div class="gallery__placeholder">
+          <span>Foto tramonto</span>
+        </div>
+      </div>
+      <div class="gallery__item">
+        <div class="gallery__placeholder">
+          <span>Foto esterno</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .gallery__grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: auto auto;
+    gap: 0.8rem;
+    margin-top: 2rem;
+  }
+
+  .gallery__item--large {
+    grid-column: span 2;
+    grid-row: span 2;
+  }
+
+  .gallery__placeholder {
+    width: 100%;
+    height: 100%;
+    min-height: 220px;
+    background-color: var(--color-dark);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  .gallery__item--large .gallery__placeholder {
+    min-height: 460px;
+  }
+
+  .gallery__placeholder span {
+    color: var(--color-gray);
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  /* Quando ci saranno le foto vere */
+  .gallery__placeholder img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.4s ease;
+  }
+
+  .gallery__item:hover .gallery__placeholder img {
+    transform: scale(1.03);
+  }
+
+  @media (max-width: 768px) {
+    .gallery__grid {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .gallery__item--large {
+      grid-column: span 2;
+      grid-row: span 1;
+    }
+
+    .gallery__placeholder,
+    .gallery__item--large .gallery__placeholder {
+      min-height: 180px;
+    }
+  }
+</style>

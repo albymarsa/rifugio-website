@@ -1,0 +1,69 @@
+<section class="section">
+  <div class="container">
+    <span class="section-label">Regolamento</span>
+    <h2 class="section-title">Rispetta la montagna</h2>
+    <div class="rules__grid">
+      <div class="rules__item">
+        <span class="rules__icon">&#9650;</span>
+        <p>Porta via tutti i tuoi rifiuti. Il rifugio non ha servizio di raccolta.</p>
+      </div>
+      <div class="rules__item">
+        <span class="rules__icon">&#9650;</span>
+        <p>Silenzio dopo le 22:00 per rispetto degli altri ospiti.</p>
+      </div>
+      <div class="rules__item">
+        <span class="rules__icon">&#9650;</span>
+        <p>Non è consentito accendere fuochi all'interno o nelle vicinanze del rifugio.</p>
+      </div>
+      <div class="rules__item">
+        <span class="rules__icon">&#9650;</span>
+        <p>Lascia il rifugio pulito e in ordine come lo hai trovato.</p>
+      </div>
+      <div class="rules__item">
+        <span class="rules__icon">&#9650;</span>
+        <p>L'acqua è una risorsa preziosa in quota: usala con parsimonia.</p>
+      </div>
+      <div class="rules__item">
+        <span class="rules__icon">&#9650;</span>
+        <p>Rispetta la fauna e la flora locale. Non raccogliere piante o fiori.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .rules__grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+    margin-top: 2rem;
+    max-width: 800px;
+  }
+
+  .rules__item {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+    padding: 1.2rem;
+    background: var(--color-off-white);
+  }
+
+  .rules__icon {
+    font-size: 0.7rem;
+    color: var(--color-gray-light);
+    flex-shrink: 0;
+    margin-top: 0.4rem;
+  }
+
+  .rules__item p {
+    font-size: 0.95rem;
+    color: var(--color-dark);
+    max-width: none;
+  }
+
+  @media (max-width: 768px) {
+    .rules__grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

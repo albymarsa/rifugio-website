@@ -1,0 +1,111 @@
+---
+const year = new Date().getFullYear();
+---
+
+<footer class="footer">
+  <div class="container">
+    <div class="footer__grid">
+      <div class="footer__col">
+        <h3 class="footer__heading">Rifugio Rosmini</h3>
+        <p class="footer__text">
+          Gestito dall'Associazione Amici del Veglia.<br />
+          Un luogo autentico nel cuore delle montagne.
+        </p>
+      </div>
+      <div class="footer__col">
+        <h3 class="footer__heading">Contatti</h3>
+        <p class="footer__text">
+          <a href="mailto:amicidelveglia@gmail.com">amicidelveglia@gmail.com</a>
+        </p>
+      </div>
+      <div class="footer__col">
+        <h3 class="footer__heading">Link</h3>
+        <nav class="footer__nav">
+          <a href="/">Il Rifugio</a>
+          <a href="/prenota">Prenota</a>
+          <a href="/soci/login">Area Soci</a>
+        </nav>
+      </div>
+    </div>
+    <div class="footer__bottom">
+      <p>&copy; {year} Associazione Amici del Veglia. Tutti i diritti riservati.</p>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .footer {
+    background-color: var(--color-black);
+    color: var(--color-white);
+    padding: 4rem 0 2rem;
+    margin-top: 0;
+  }
+
+  .footer__grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    gap: 3rem;
+  }
+
+  .footer__heading {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--color-gray-light);
+    margin-bottom: 1rem;
+  }
+
+  .footer__text {
+    font-size: 0.95rem;
+    line-height: 1.8;
+    color: var(--color-gray-light);
+    max-width: none;
+  }
+
+  .footer__text a {
+    color: var(--color-white);
+    transition: opacity 0.2s;
+  }
+
+  .footer__text a:hover {
+    opacity: 0.7;
+    text-decoration: none;
+  }
+
+  .footer__nav {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+
+  .footer__nav a {
+    color: var(--color-gray-light);
+    font-size: 0.95rem;
+    transition: color 0.2s;
+  }
+
+  .footer__nav a:hover {
+    color: var(--color-white);
+    text-decoration: none;
+  }
+
+  .footer__bottom {
+    margin-top: 3rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .footer__bottom p {
+    font-size: 0.8rem;
+    color: var(--color-gray);
+    max-width: none;
+  }
+
+  @media (max-width: 768px) {
+    .footer__grid {
+      grid-template-columns: 1fr;
+      gap: 2rem;
+    }
+  }
+</style>

@@ -1,0 +1,156 @@
+---
+const currentPath = Astro.url.pathname;
+---
+
+<header class="header">
+  <div class="header__inner container">
+    <a href="/" class="header__logo">
+      Rifugio Rosmini
+    </a>
+    <nav class="header__nav">
+      <a href="/" class:list={["header__link", { active: currentPath === "/" }]}>Il Rifugio</a>
+      <a href="/prenota" class:list={["header__link", { active: currentPath === "/prenota" }]}>Prenota</a>
+      <a href="/soci/login" class:list={["header__link", { active: currentPath.startsWith("/soci") }]}>Area Soci</a>
+    </nav>
+    <button class="header__menu" aria-label="Apri menu" id="menu-toggle">
+      <span></span>
+      <span></span>
+    </button>
+  </div>
+</header>
+
+<!-- Menu mobile -->
+<div class="mobile-nav" id="mobile-nav">
+  <a href="/" class="mobile-nav__link">Il Rifugio</a>
+  <a href="/prenota" class="mobile-nav__link">Prenota</a>
+  <a href="/soci/login" class="mobile-nav__link">Area Soci</a>
+</div>
+
+<script>
+  const toggle = document.getElementById('menu-toggle');
+  const mobileNav = document.getElementById('mobile-nav');
+
+  toggle?.addEventListener('click', () => {
+    const isOpen = mobileNav?.classList.toggle('open');
+    toggle.classList.toggle('open');
+    toggle.setAttribute('aria-expanded', String(isOpen));
+  });
+</script>
+
+<style>
+  .header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    background-color: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .header__inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 64px;
+  }
+
+  .header__logo {
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-black);
+  }
+
+  .header__logo:hover {
+    text-decoration: none;
+  }
+
+  .header__nav {
+    display: flex;
+    gap: 2.5rem;
+  }
+
+  .header__link {
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--color-gray);
+    transition: color 0.2s;
+    padding-bottom: 2px;
+  }
+
+  .header__link:hover,
+  .header__link.active {
+    color: var(--color-black);
+    text-decoration: none;
+    border-bottom: 2px solid var(--color-black);
+  }
+
+  /* Hamburger */
+  .header__menu {
+    display: none;
+    flex-direction: column;
+    gap: 5px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+  }
+
+  .header__menu span {
+    display: block;
+    width: 22px;
+    height: 2px;
+    background-color: var(--color-black);
+    transition: transform 0.3s, opacity 0.3s;
+  }
+
+  .header__menu.open span:first-child {
+    transform: translateY(3.5px) rotate(45deg);
+  }
+
+  .header__menu.open span:last-child {
+    transform: translateY(-3.5px) rotate(-45deg);
+  }
+
+  /* Mobile nav overlay */
+  .mobile-nav {
+    display: none;
+    position: fixed;
+    top: 64px;
+    left: 0;
+    right: 0;
+    background: var(--color-white);
+    z-index: 99;
+    padding: 2rem;
+    border-bottom: 1px solid var(--color-border);
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .mobile-nav.open {
+    display: flex;
+  }
+
+  .mobile-nav__link {
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--color-black);
+  }
+
+  @media (max-width: 768px) {
+    .header__nav {
+      display: none;
+    }
+
+    .header__menu {
+      display: flex;
+    }
+  }
+</style>

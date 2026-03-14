@@ -1,0 +1,249 @@
+---
+interface Member {
+  id: string;
+  nome: string;
+  cognome: string;
+  email: string;
+  telefono?: string;
+  tipo_socio: string;
+  created_at: string;
+}
+
+interface Props {
+  members: Member[];
+}
+
+const { members } = Astro.props;
+
+function formatDate(dateStr: string): string {
+  try {
+    return new Date(dateStr).toLocaleDateString('it-IT', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+    });
+  } catch {
+    return dateStr;
+  }
+}
+---
+
+<div class="admin-table-wrapper">
+  <div class="admin-table__toolbar">
+    <input
+      type="text"
+      id="admin-search"
+      class="admin-table__search"
+      placeholder="Cerca per nome, cognome o email..."
+    />
+    <span class="admin-table__count">{members.length} soci totali</span>
+  </div>
+
+  <!-- Vista desktop: tabella -->
+  <div class="admin-table__desktop">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>Cognome</th>
+          <th>Nome</th>
+          <th>Email</th>
+          <th>Telefono</th>
+          <th>Tipo</th>
+          <th>Data iscrizione</th>
+        </tr>
+      </thead>
+      <tbody id="admin-table-body">
+        {members.map((m) => (
+          <tr data-search={`${m.cognome} ${m.nome} ${m.email}`.toLowerCase()} data-id={m.id}>
+            <td>{m.cognome}</td>
+            <td>{m.nome}</td>
+            <td>{m.email}</td>
+            <td>{m.telefono || '—'}</td>
+            <td>
+              <span class:list={['admin-table__badge', { 'admin-table__badge--founder': m.tipo_socio === 'fondatore' }]}>
+                {m.tipo_socio === 'fondatore' ? 'Fondatore' : 'Ordinario'}
+              </span>
+            </td>
+            <td>{formatDate(m.created_at)}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Vista mobile: card -->
+  <div class="admin-table__mobile">
+    {members.map((m) => (
+      <div class="admin-mobile-card" data-search={`${m.cognome} ${m.nome} ${m.email}`.toLowerCase()} data-id={m.id}>
+        <div class="admin-mobile-card__header">
+          <strong>{m.cognome} {m.nome}</strong>
+          <span class:list={['admin-table__badge', { 'admin-table__badge--founder': m.tipo_socio === 'fondatore' }]}>
+            {m.tipo_socio === 'fondatore' ? 'Fondatore' : 'Ordinario'}
+          </span>
+        </div>
+        <div class="admin-mobile-card__body">
+          <span>{m.email}</span>
+          {m.telefono && <span>{m.telefono}</span>}
+          <span class="admin-mobile-card__date">Iscritto il {formatDate(m.created_at)}</span>
+        </div>
+      </div>
+    ))}
+  </div>
+
+  {members.length === 0 && (
+    <p class="admin-table__empty">Nessun socio registrato.</p>
+  )}
+</div>
+
+<script>
+  const searchInput = document.getElementById('admin-search') as HTMLInputElement;
+  const tableRows = document.querySelectorAll('#admin-table-body tr[data-search]');
+  const mobileCards = document.querySelectorAll('.admin-mobile-card[data-search]');
+
+  searchInput?.addEventListener('input', () => {
+    const query = searchInput.value.toLowerCase().trim();
+
+    tableRows.forEach((row) => {
+      const searchText = row.getAttribute('data-search') || '';
+      (row as HTMLElement).style.display = searchText.includes(query) ? '' : 'none';
+    });
+
+    mobileCards.forEach((card) => {
+      const searchText = card.getAttribute('data-search') || '';
+      (card as HTMLElement).style.display = searchText.includes(query) ? '' : 'none';
+    });
+  });
+</script>
+
+<style>
+  .admin-table-wrapper {
+    width: 100%;
+  }
+
+  .admin-table__toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .admin-table__search {
+    flex: 1;
+    min-width: 200px;
+    padding: 0.8rem 1rem;
+    border: 1px solid var(--color-border);
+    font-size: 0.95rem;
+    font-family: var(--font-main);
+    background: var(--color-white);
+    transition: border-color 0.2s;
+  }
+
+  .admin-table__search:focus {
+    outline: none;
+    border-color: var(--color-black);
+  }
+
+  .admin-table__count {
+    font-size: 0.85rem;
+    color: var(--color-gray);
+    white-space: nowrap;
+  }
+
+  .admin-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .admin-table th {
+    text-align: left;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--color-gray);
+    padding: 0.8rem 1rem;
+    border-bottom: 2px solid var(--color-border);
+  }
+
+  .admin-table td {
+    padding: 0.8rem 1rem;
+    border-bottom: 1px solid var(--color-border);
+    font-size: 0.9rem;
+    color: var(--color-dark);
+  }
+
+  .admin-table tbody tr:hover {
+    background-color: var(--color-off-white);
+  }
+
+  .admin-table__badge {
+    display: inline-block;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 0.15rem 0.5rem;
+    background: var(--color-off-white);
+    color: var(--color-gray);
+  }
+
+  .admin-table__badge--founder {
+    background: #f0f7ec;
+    color: var(--color-accent);
+  }
+
+  .admin-table__empty {
+    text-align: center;
+    padding: 3rem;
+    color: var(--color-gray);
+  }
+
+  /* Mobile cards hidden on desktop */
+  .admin-table__mobile {
+    display: none;
+  }
+
+  .admin-mobile-card {
+    border: 1px solid var(--color-border);
+    padding: 1.2rem;
+    margin-bottom: 0.8rem;
+    background: var(--color-white);
+  }
+
+  .admin-mobile-card__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.6rem;
+  }
+
+  .admin-mobile-card__header strong {
+    font-size: 0.95rem;
+  }
+
+  .admin-mobile-card__body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    font-size: 0.85rem;
+    color: var(--color-gray);
+  }
+
+  .admin-mobile-card__date {
+    margin-top: 0.3rem;
+    font-size: 0.8rem;
+    color: var(--color-gray-light);
+  }
+
+  @media (max-width: 768px) {
+    .admin-table__desktop {
+      display: none;
+    }
+
+    .admin-table__mobile {
+      display: block;
+    }
+  }
+</style>

@@ -1,0 +1,91 @@
+<section class="section">
+  <div class="container info">
+    <span class="section-label">Il Rifugio</span>
+    <h2 class="section-title">Un rifugio autentico nel cuore delle Alpi</h2>
+    <div class="info__content">
+      <div class="info__text">
+        <p>
+          Situato a 1750 m s.l.m., il Rifugio Rosmini offre un'esperienza
+          autentica di montagna. Con 25 posti letto, è il punto di partenza ideale
+          per escursioni, arrampicate e per chi cerca il silenzio e la bellezza
+          dell'alta quota.
+        </p>
+        <p class="mt-2">
+          Gestito dall'Associazione Amici del Veglia, il rifugio è aperto
+          da metà giugno a metà ottobre e offre un ambiente semplice e accogliente,
+          perfetto per rigenerarsi lontano dalla routine quotidiana.
+        </p>
+      </div>
+      <div class="info__details">
+        <div class="info__detail">
+          <span class="info__detail-label">Posti letto</span>
+          <span class="info__detail-value">25</span>
+        </div>
+        <div class="info__detail">
+          <span class="info__detail-label">Altitudine</span>
+          <span class="info__detail-value">1750 m</span>
+        </div>
+        <div class="info__detail">
+          <span class="info__detail-label">Stagione</span>
+          <span class="info__detail-value">Metà Giu — Metà Ott</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .info__content {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr;
+    gap: 4rem;
+    align-items: start;
+    margin-top: 1rem;
+  }
+
+  .info__text p {
+    font-size: 1.05rem;
+  }
+
+  .info__details {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    padding: 2rem;
+    background-color: var(--color-off-white);
+  }
+
+  .info__detail {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .info__detail:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+
+  .info__detail-label {
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--color-gray);
+  }
+
+  .info__detail-value {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--color-black);
+  }
+
+  @media (max-width: 768px) {
+    .info__content {
+      grid-template-columns: 1fr;
+      gap: 2rem;
+    }
+  }
+</style>

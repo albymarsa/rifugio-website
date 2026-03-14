@@ -1,0 +1,120 @@
+---
+interface Props {
+  mode: 'login' | 'register';
+}
+
+const { mode } = Astro.props;
+const isLogin = mode === 'login';
+---
+
+<form id="auth-form" class="auth-form" novalidate>
+  <div class="form-group">
+    <label for="auth-email">Email *</label>
+    <input type="email" id="auth-email" name="email" required autocomplete="email" />
+  </div>
+
+  <div class="form-group">
+    <label for="auth-password">Password *</label>
+    <input
+      type="password"
+      id="auth-password"
+      name="password"
+      required
+      minlength="6"
+      autocomplete={isLogin ? 'current-password' : 'new-password'}
+    />
+    {!isLogin && (
+      <span class="form-hint">Minimo 6 caratteri</span>
+    )}
+  </div>
+
+  {!isLogin && (
+    <div class="form-group">
+      <label for="auth-password-confirm">Conferma password *</label>
+      <input
+        type="password"
+        id="auth-password-confirm"
+        name="password_confirm"
+        required
+        minlength="6"
+        autocomplete="new-password"
+      />
+    </div>
+  )}
+
+  <button type="submit" class="btn btn-primary auth-form__submit">
+    {isLogin ? 'Accedi' : 'Crea account'}
+  </button>
+
+  <div id="auth-error" class="form-message form-message--error" hidden></div>
+  <div id="auth-success" class="form-message form-message--success" hidden></div>
+
+  <div class="auth-form__footer">
+    {isLogin ? (
+      <p>Non hai un account? <a href="/soci/registrazione">Registrati</a></p>
+    ) : (
+      <p>Hai gi&agrave; un account? <a href="/soci/login">Accedi</a></p>
+    )}
+  </div>
+</form>
+
+<style>
+  .auth-form {
+    max-width: 440px;
+  }
+
+  .auth-form__submit {
+    width: 100%;
+    padding: 1rem;
+    font-size: 0.95rem;
+    margin-top: 0.5rem;
+  }
+
+  .auth-form__submit:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  .auth-form__footer {
+    margin-top: 2rem;
+    text-align: center;
+  }
+
+  .auth-form__footer p {
+    font-size: 0.9rem;
+    color: var(--color-gray);
+    max-width: none;
+  }
+
+  .auth-form__footer a {
+    color: var(--color-black);
+    font-weight: 600;
+    text-decoration: underline;
+  }
+
+  .form-hint {
+    display: block;
+    font-size: 0.8rem;
+    color: var(--color-gray);
+    margin-top: 0.3rem;
+  }
+
+  .form-message {
+    margin-top: 1.5rem;
+    padding: 1.2rem 1.5rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+  }
+
+  .form-message--success {
+    background-color: #f0f7ec;
+    color: #2d5016;
+    border-left: 3px solid #2d5016;
+  }
+
+  .form-message--error {
+    background-color: #fdf0f0;
+    color: #9b1c1c;
+    border-left: 3px solid #9b1c1c;
+  }
+</style>

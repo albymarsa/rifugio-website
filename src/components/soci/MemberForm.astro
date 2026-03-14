@@ -1,0 +1,151 @@
+---
+interface Member {
+  id?: string;
+  nome?: string;
+  cognome?: string;
+  email?: string;
+  telefono?: string;
+  data_nascita?: string;
+  luogo_nascita?: string;
+  codice_fiscale?: string;
+  indirizzo_residenza?: string;
+  tipo_documento?: string;
+  numero_documento?: string;
+}
+
+interface Props {
+  member?: Member;
+  formId?: string;
+  submitLabel?: string;
+  showCancel?: boolean;
+}
+
+const {
+  member = {},
+  formId = 'member-form',
+  submitLabel = 'Salva dati',
+  showCancel = false,
+} = Astro.props;
+---
+
+<form id={formId} class="member-form" novalidate>
+  {member.id && <input type="hidden" name="id" value={member.id} />}
+
+  <div class="form-row">
+    <div class="form-group">
+      <label for={`${formId}-nome`}>Nome *</label>
+      <input type="text" id={`${formId}-nome`} name="nome" required value={member.nome || ''} />
+    </div>
+    <div class="form-group">
+      <label for={`${formId}-cognome`}>Cognome *</label>
+      <input type="text" id={`${formId}-cognome`} name="cognome" required value={member.cognome || ''} />
+    </div>
+  </div>
+
+  <div class="form-row">
+    <div class="form-group">
+      <label for={`${formId}-email`}>Email *</label>
+      <input type="email" id={`${formId}-email`} name="email" required value={member.email || ''} />
+    </div>
+    <div class="form-group">
+      <label for={`${formId}-telefono`}>Telefono</label>
+      <input type="tel" id={`${formId}-telefono`} name="telefono" value={member.telefono || ''} />
+    </div>
+  </div>
+
+  <div class="form-row">
+    <div class="form-group">
+      <label for={`${formId}-data_nascita`}>Data di nascita</label>
+      <input type="date" id={`${formId}-data_nascita`} name="data_nascita" value={member.data_nascita || ''} />
+    </div>
+    <div class="form-group">
+      <label for={`${formId}-luogo_nascita`}>Luogo di nascita</label>
+      <input type="text" id={`${formId}-luogo_nascita`} name="luogo_nascita" value={member.luogo_nascita || ''} />
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label for={`${formId}-codice_fiscale`}>Codice fiscale</label>
+    <input type="text" id={`${formId}-codice_fiscale`} name="codice_fiscale" value={member.codice_fiscale || ''} maxlength="16" style="text-transform: uppercase;" />
+  </div>
+
+  <div class="form-group">
+    <label for={`${formId}-indirizzo`}>Indirizzo di residenza</label>
+    <input type="text" id={`${formId}-indirizzo`} name="indirizzo_residenza" value={member.indirizzo_residenza || ''} />
+  </div>
+
+  <div class="form-row">
+    <div class="form-group">
+      <label for={`${formId}-tipo_doc`}>Tipo documento</label>
+      <select id={`${formId}-tipo_doc`} name="tipo_documento">
+        <option value="">— Seleziona —</option>
+        <option value="carta_identita" selected={member.tipo_documento === 'carta_identita'}>Carta d'identit&agrave;</option>
+        <option value="patente" selected={member.tipo_documento === 'patente'}>Patente</option>
+        <option value="passaporto" selected={member.tipo_documento === 'passaporto'}>Passaporto</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label for={`${formId}-numero_doc`}>Numero documento</label>
+      <input type="text" id={`${formId}-numero_doc`} name="numero_documento" value={member.numero_documento || ''} />
+    </div>
+  </div>
+
+  <div class="member-form__actions">
+    <button type="submit" class="btn btn-primary member-form__submit">
+      {submitLabel}
+    </button>
+    {showCancel && (
+      <button type="button" class="btn btn-outline member-form__cancel" data-cancel>
+        Annulla
+      </button>
+    )}
+  </div>
+
+  <div class="member-form__message" data-message hidden></div>
+</form>
+
+<style>
+  .member-form {
+    max-width: 680px;
+  }
+
+  .member-form__actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 0.5rem;
+  }
+
+  .member-form__submit {
+    padding: 0.9rem 2.4rem;
+    font-size: 0.9rem;
+  }
+
+  .member-form__submit:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  .member-form__cancel {
+    padding: 0.9rem 2.4rem;
+    font-size: 0.9rem;
+  }
+
+  .member-form__message {
+    margin-top: 1.5rem;
+    padding: 1rem 1.5rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+  }
+
+  .member-form__message[data-type="success"] {
+    background-color: #f0f7ec;
+    color: #2d5016;
+    border-left: 3px solid #2d5016;
+  }
+
+  .member-form__message[data-type="error"] {
+    background-color: #fdf0f0;
+    color: #9b1c1c;
+    border-left: 3px solid #9b1c1c;
+  }
+</style>
