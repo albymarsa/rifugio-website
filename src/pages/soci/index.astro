@@ -236,6 +236,23 @@ const profiloDati = profilo ? {
         </div>
       )}
     </div>
+
+    <!-- Sezione Account -->
+    <div class="dashboard__account">
+      <h2 class="dashboard__subtitle">Il tuo account</h2>
+      <p class="dashboard__account-desc">
+        Gestisci i tuoi dati personali in conformità con il GDPR.
+      </p>
+      <div class="dashboard__account-actions">
+        <button id="download-data-btn" class="btn btn-outline">
+          Scarica i miei dati
+        </button>
+        <button id="delete-account-btn" class="btn btn-danger">
+          Elimina account
+        </button>
+      </div>
+      <div id="account-message" class="dashboard__account-msg" hidden></div>
+    </div>
   </div>
 </SociLayout>
 
@@ -374,6 +391,81 @@ const profiloDati = profilo ? {
       }
     });
   });
+
+  // === Scarica i miei dati ===
+  const downloadBtn = document.getElementById('download-data-btn');
+  if (downloadBtn) {
+    downloadBtn.addEventListener('click', async () => {
+      (downloadBtn as HTMLButtonElement).textContent = 'Caricamento...';
+      (downloadBtn as HTMLButtonElement).disabled = true;
+
+      try {
+        const res = await fetch('/api/account/data');
+        if (!res.ok) {
+          alert('Errore nel download dei dati. Riprova.');
+          return;
+        }
+
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'i-miei-dati.json';
+        a.click();
+        URL.revokeObjectURL(url);
+      } catch {
+        alert('Errore di connessione. Riprova.');
+      } finally {
+        (downloadBtn as HTMLButtonElement).textContent = 'Scarica i miei dati';
+        (downloadBtn as HTMLButtonElement).disabled = false;
+      }
+    });
+  }
+
+  // === Elimina account ===
+  const deleteBtn = document.getElementById('delete-account-btn');
+  if (deleteBtn) {
+    deleteBtn.addEventListener('click', async () => {
+      const confirmed = confirm(
+        'Sei sicuro di voler eliminare il tuo account?\n\n' +
+        'Questa azione è irreversibile e comporterà la cancellazione di:\n' +
+        '- Il tuo account e profilo\n' +
+        '- Tutti i soci registrati da te\n' +
+        '- Tutte le tue prenotazioni\n\n' +
+        'Ti consigliamo di scaricare i tuoi dati prima di procedere.'
+      );
+
+      if (!confirmed) return;
+
+      const doubleConfirm = confirm(
+        'Conferma definitiva: vuoi davvero eliminare il tuo account e tutti i dati associati?'
+      );
+
+      if (!doubleConfirm) return;
+
+      (deleteBtn as HTMLButtonElement).textContent = 'Eliminazione...';
+      (deleteBtn as HTMLButtonElement).disabled = true;
+
+      try {
+        const res = await fetch('/api/account/delete', { method: 'DELETE' });
+        const result = await res.json();
+
+        if (!res.ok) {
+          alert(result.error || 'Errore nell\'eliminazione dell\'account.');
+          (deleteBtn as HTMLButtonElement).textContent = 'Elimina account';
+          (deleteBtn as HTMLButtonElement).disabled = false;
+          return;
+        }
+
+        alert('Account eliminato con successo.');
+        window.location.href = '/';
+      } catch {
+        alert('Errore di connessione. Riprova.');
+        (deleteBtn as HTMLButtonElement).textContent = 'Elimina account';
+        (deleteBtn as HTMLButtonElement).disabled = false;
+      }
+    });
+  }
 </script>
 
 <style>
@@ -460,6 +552,32 @@ const profiloDati = profilo ? {
     padding: 1rem 1.5rem;
     margin-bottom: 1.5rem;
     font-size: 0.95rem;
+    font-weight: 600;
+  }
+
+  .dashboard__account {
+    margin-top: 1rem;
+    padding-top: 2rem;
+    border-top: 2px solid var(--color-border);
+  }
+
+  .dashboard__account-desc {
+    font-size: 0.9rem;
+    color: var(--color-gray);
+    margin-bottom: 1.5rem;
+    max-width: none;
+  }
+
+  .dashboard__account-actions {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .dashboard__account-msg {
+    margin-top: 1rem;
+    padding: 1rem 1.5rem;
+    font-size: 0.9rem;
     font-weight: 600;
   }
 </style>
