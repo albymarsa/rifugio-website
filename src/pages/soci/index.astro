@@ -119,13 +119,13 @@ function getSociDisponibili(prenotazioneId: string) {
   return members.filter((m: any) => !giAssociati.includes(m.id));
 }
 
-// Dati profilo per il bottone "Usa i miei dati" (serializzati come data attributes)
-const profiloJson = profilo ? JSON.stringify({
-  nome: profilo.nome,
-  cognome: profilo.cognome,
-  email: profilo.email,
+// Dati profilo per il bottone "Usa i miei dati"
+const profiloDati = profilo ? {
+  nome: profilo.nome || '',
+  cognome: profilo.cognome || '',
+  email: profilo.email || '',
   telefono: profilo.telefono || '',
-}) : null;
+} : null;
 ---
 
 <SociLayout title="Dashboard" showBackLink={false}>
@@ -195,10 +195,16 @@ const profiloJson = profilo ? JSON.stringify({
       <!-- Form nuovo componente -->
       <div id="new-member-container" hidden>
         <h2 class="dashboard__subtitle">Nuovo socio</h2>
-        {profiloJson && (
-          <button id="use-my-data-btn" class="btn btn-outline dashboard__use-data-btn" data-profilo={profiloJson}>
-            Usa i miei dati
-          </button>
+        {profiloDati && (
+          <>
+            <button id="use-my-data-btn" class="btn btn-outline dashboard__use-data-btn">
+              Usa i miei dati
+            </button>
+            <input type="hidden" id="profilo-prefill-nome" value={profiloDati.nome} />
+            <input type="hidden" id="profilo-prefill-cognome" value={profiloDati.cognome} />
+            <input type="hidden" id="profilo-prefill-email" value={profiloDati.email} />
+            <input type="hidden" id="profilo-prefill-telefono" value={profiloDati.telefono} />
+          </>
         )}
         <MemberForm formId="new-member-form" submitLabel="Aggiungi" showCancel={true} />
       </div>
@@ -234,25 +240,6 @@ const profiloJson = profilo ? JSON.stringify({
 </SociLayout>
 
 <script>
-  import { createClient } from '@supabase/supabase-js';
-
-  const supabase = createClient(
-    import.meta.env.PUBLIC_SUPABASE_URL,
-    import.meta.env.PUBLIC_SUPABASE_ANON_KEY
-  );
-
-  function getCookie(name: string): string | null {
-    const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
-    return match ? match[2] : null;
-  }
-
-  const accessToken = getCookie('sb-access-token');
-  const refreshToken = getCookie('sb-refresh-token');
-
-  if (accessToken && refreshToken) {
-    supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
-  }
-
   // === Aggiungi nuovo socio ===
   const addBtn = document.getElementById('add-member-btn')!;
   const newContainer = document.getElementById('new-member-container')!;
@@ -274,15 +261,15 @@ const profiloJson = profilo ? JSON.stringify({
   const useMyDataBtn = document.getElementById('use-my-data-btn');
   if (useMyDataBtn) {
     useMyDataBtn.addEventListener('click', () => {
-      const profilo = JSON.parse(useMyDataBtn.getAttribute('data-profilo')!);
-      const setVal = (id: string, val: string) => {
-        const el = document.getElementById(id) as HTMLInputElement;
-        if (el && val) el.value = val;
+      const setVal = (targetId: string, sourceId: string) => {
+        const target = document.getElementById(targetId) as HTMLInputElement;
+        const source = document.getElementById(sourceId) as HTMLInputElement;
+        if (target && source?.value) target.value = source.value;
       };
-      setVal('new-member-form-nome', profilo.nome);
-      setVal('new-member-form-cognome', profilo.cognome);
-      setVal('new-member-form-email', profilo.email);
-      setVal('new-member-form-telefono', profilo.telefono);
+      setVal('new-member-form-nome', 'profilo-prefill-nome');
+      setVal('new-member-form-cognome', 'profilo-prefill-cognome');
+      setVal('new-member-form-email', 'profilo-prefill-email');
+      setVal('new-member-form-telefono', 'profilo-prefill-telefono');
       useMyDataBtn.hidden = true;
     });
   }
@@ -299,38 +286,46 @@ const profiloJson = profilo ? JSON.stringify({
     submitBtn.textContent = 'Salvataggio...';
     submitBtn.disabled = true;
 
-    const { data: { user } } = await supabase.auth.getUser();
-
     const formData = new FormData(newForm);
-    const memberData = {
-      nome: formData.get('nome'),
-      cognome: formData.get('cognome'),
-      email: formData.get('email'),
-      telefono: formData.get('telefono') || null,
-      data_nascita: formData.get('data_nascita') || null,
-      luogo_nascita: formData.get('luogo_nascita') || null,
-      codice_fiscale: formData.get('codice_fiscale') || null,
-      indirizzo_residenza: formData.get('indirizzo_residenza') || null,
-      tipo_documento: formData.get('tipo_documento') || null,
-      numero_documento: formData.get('numero_documento') || null,
-      registrato_da: user?.id,
-      tipo_socio: 'ordinario',
-    };
-
-    const { error } = await supabase.from('soci').insert([memberData]);
-
     const msgEl = newForm.querySelector('[data-message]') as HTMLElement;
 
-    if (error) {
-      msgEl.textContent = 'Errore: ' + error.message;
+    try {
+      const res = await fetch('/api/soci', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          nome: formData.get('nome'),
+          cognome: formData.get('cognome'),
+          email: formData.get('email'),
+          telefono: formData.get('telefono') || null,
+          data_nascita: formData.get('data_nascita') || null,
+          luogo_nascita: formData.get('luogo_nascita') || null,
+          codice_fiscale: formData.get('codice_fiscale') || null,
+          indirizzo_residenza: formData.get('indirizzo_residenza') || null,
+          tipo_documento: formData.get('tipo_documento') || null,
+          numero_documento: formData.get('numero_documento') || null,
+        }),
+      });
+
+      const result = await res.json();
+
+      if (!res.ok) {
+        msgEl.textContent = result.error || 'Errore nel salvataggio.';
+        msgEl.setAttribute('data-type', 'error');
+        msgEl.hidden = false;
+        submitBtn.textContent = 'Aggiungi';
+        submitBtn.disabled = false;
+        return;
+      }
+
+      window.location.reload();
+    } catch {
+      msgEl.textContent = 'Errore di connessione. Riprova.';
       msgEl.setAttribute('data-type', 'error');
       msgEl.hidden = false;
       submitBtn.textContent = 'Aggiungi';
       submitBtn.disabled = false;
-      return;
     }
-
-    window.location.reload();
   });
 
   // === Modifica socio ===
@@ -360,21 +355,23 @@ const profiloJson = profilo ? JSON.stringify({
 
       if (!socioId) return;
 
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      try {
+        const res = await fetch('/api/prenotazioni-soci', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ prenotazione_id: prenId, socio_id: socioId }),
+        });
 
-      const { error } = await supabase.from('prenotazioni_soci').insert([{
-        prenotazione_id: prenId,
-        socio_id: socioId,
-        aggiunto_da: user.id,
-      }]);
+        if (!res.ok) {
+          const result = await res.json();
+          alert(result.error || 'Errore nell\'aggiunta del partecipante.');
+          return;
+        }
 
-      if (error) {
-        alert('Errore: ' + error.message);
-        return;
+        window.location.reload();
+      } catch {
+        alert('Errore di connessione. Riprova.');
       }
-
-      window.location.reload();
     });
   });
 </script>

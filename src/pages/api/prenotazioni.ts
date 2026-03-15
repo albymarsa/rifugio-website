@@ -5,6 +5,16 @@ import { createClient } from '@supabase/supabase-js';
 
 export const POST: APIRoute = async ({ request, cookies }) => {
   try {
+    // Verifica Origin (CSRF protection)
+    const origin = request.headers.get('origin');
+    const siteUrl = import.meta.env.SITE_URL || import.meta.env.PUBLIC_SUPABASE_URL;
+    if (!origin || (!origin.startsWith('http://localhost:') && siteUrl && !origin.startsWith(siteUrl))) {
+      return new Response(JSON.stringify({ error: 'Richiesta non autorizzata' }), {
+        status: 403,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
     // Verifica autenticazione
     const accessToken = cookies.get('sb-access-token')?.value;
     const refreshToken = cookies.get('sb-refresh-token')?.value;
@@ -60,10 +70,37 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       });
     }
 
+    // Validazione num_persone
+    const numPersone = parseInt(num_persone, 10);
+    if (isNaN(numPersone) || numPersone < 1 || numPersone > 25) {
+      return new Response(JSON.stringify({ error: 'Numero persone non valido (1-25)' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Validazione date
+    const arrivo = new Date(data_arrivo);
+    const partenza = new Date(data_partenza);
+    if (isNaN(arrivo.getTime()) || isNaN(partenza.getTime()) || partenza <= arrivo) {
+      return new Response(JSON.stringify({ error: 'Date non valide: la partenza deve essere successiva all\'arrivo' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Validazione lunghezza note
+    if (note && typeof note === 'string' && note.length > 2000) {
+      return new Response(JSON.stringify({ error: 'Note troppo lunghe (max 2000 caratteri)' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
     const { error } = await supabase.from('prenotazioni').insert([{
       data_arrivo,
       data_partenza,
-      num_persone: parseInt(num_persone, 10),
+      num_persone: numPersone,
       note: note || null,
       richiedente_nome: `${profilo.nome} ${profilo.cognome}`,
       richiedente_email: profilo.email,
@@ -74,7 +111,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 
     if (error) {
       console.error('[API prenotazioni] Errore insert:', error.message, error.code, error.details, error.hint);
-      return new Response(JSON.stringify({ error: 'Errore nel salvataggio', details: error.message }), {
+      return new Response(JSON.stringify({ error: 'Errore nel salvataggio della prenotazione' }), {
         status: 500,
         headers: { 'Content-Type': 'application/json' },
       });

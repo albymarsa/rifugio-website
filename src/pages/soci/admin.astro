@@ -27,9 +27,10 @@ if (accessToken && refreshToken) {
   });
 }
 
+// Carica solo i campi necessari per la visualizzazione (NO PII sensibili come CF, documento)
 const { data: allMembers, error } = await supabase
   .from('soci')
-  .select('*')
+  .select('id, nome, cognome, email, telefono, tipo_socio, created_at')
   .order('cognome');
 ---
 
@@ -69,10 +70,6 @@ const { data: allMembers, error } = await supabase
     )}
 
     {allMembers && <AdminTable members={allMembers} />}
-
-    {allMembers && (
-      <script id="soci-data" type="application/json" set:html={JSON.stringify(allMembers)} />
-    )}
   </div>
 </SociLayout>
 
@@ -81,46 +78,60 @@ const { data: allMembers, error } = await supabase
 
   const exportBtn = document.getElementById('export-soci-btn');
   const yearSelect = document.getElementById('export-year') as HTMLSelectElement;
-  const dataEl = document.getElementById('soci-data');
 
-  if (exportBtn && yearSelect && dataEl) {
-    const allSoci = JSON.parse(dataEl.textContent || '[]');
+  if (exportBtn && yearSelect) {
+    exportBtn.addEventListener('click', async () => {
+      const year = yearSelect.value;
+      (exportBtn as HTMLButtonElement).textContent = 'Caricamento...';
+      (exportBtn as HTMLButtonElement).disabled = true;
 
-    exportBtn.addEventListener('click', () => {
-      const year = parseInt(yearSelect.value);
-      const filtered = allSoci.filter((s: any) => new Date(s.created_at).getFullYear() === year);
+      try {
+        const res = await fetch(`/api/soci/export?year=${year}`);
+        if (!res.ok) {
+          const result = await res.json();
+          alert(result.error || 'Errore nel caricamento dei dati.');
+          return;
+        }
 
-      if (filtered.length === 0) {
-        alert('Nessun socio trovato per l\'anno ' + year);
-        return;
+        const filtered = await res.json();
+
+        if (filtered.length === 0) {
+          alert('Nessun socio trovato per l\'anno ' + year);
+          return;
+        }
+
+        const rows = filtered.map((s: any) => ({
+          'Cognome': s.cognome || '',
+          'Nome': s.nome || '',
+          'Email': s.email || '',
+          'Telefono': s.telefono || '',
+          'Codice Fiscale': s.codice_fiscale || '',
+          'Data Nascita': s.data_nascita || '',
+          'Luogo Nascita': s.luogo_nascita || '',
+          'Indirizzo Residenza': s.indirizzo_residenza || '',
+          'Tipo Documento': s.tipo_documento || '',
+          'Numero Documento': s.numero_documento || '',
+          'Tipo Socio': s.tipo_socio || '',
+          'Data Iscrizione': s.created_at ? new Date(s.created_at).toLocaleDateString('it-IT') : '',
+        }));
+
+        const ws = XLSX.utils.json_to_sheet(rows);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Soci');
+
+        // Auto-width colonne
+        const colWidths = Object.keys(rows[0]).map((key) => ({
+          wch: Math.max(key.length, ...rows.map((r: any) => String(r[key]).length)) + 2,
+        }));
+        ws['!cols'] = colWidths;
+
+        XLSX.writeFile(wb, `soci_${year}.xlsx`);
+      } catch {
+        alert('Errore di connessione. Riprova.');
+      } finally {
+        (exportBtn as HTMLButtonElement).textContent = 'Esporta Excel';
+        (exportBtn as HTMLButtonElement).disabled = false;
       }
-
-      const rows = filtered.map((s: any) => ({
-        'Cognome': s.cognome || '',
-        'Nome': s.nome || '',
-        'Email': s.email || '',
-        'Telefono': s.telefono || '',
-        'Codice Fiscale': s.codice_fiscale || '',
-        'Data Nascita': s.data_nascita || '',
-        'Luogo Nascita': s.luogo_nascita || '',
-        'Indirizzo Residenza': s.indirizzo_residenza || '',
-        'Tipo Documento': s.tipo_documento || '',
-        'Numero Documento': s.numero_documento || '',
-        'Tipo Socio': s.tipo_socio || '',
-        'Data Iscrizione': s.created_at ? new Date(s.created_at).toLocaleDateString('it-IT') : '',
-      }));
-
-      const ws = XLSX.utils.json_to_sheet(rows);
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, 'Soci');
-
-      // Auto-width colonne
-      const colWidths = Object.keys(rows[0]).map((key) => ({
-        wch: Math.max(key.length, ...rows.map((r: any) => String(r[key]).length)) + 2,
-      }));
-      ws['!cols'] = colWidths;
-
-      XLSX.writeFile(wb, `soci_${year}.xlsx`);
     });
   }
 </script>

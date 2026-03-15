@@ -144,31 +144,10 @@ const annullate = (prenotazioni || []).filter((p: any) => p.stato === 'annullata
       )}
     </div>
 
-    <script id="partecipanti-data" type="application/json" set:html={JSON.stringify(partecipantiMap)} />
-    <script id="soci-data" type="application/json" set:html={JSON.stringify(allSoci)} />
   </div>
 </SociLayout>
 
 <script>
-  import { createClient } from '@supabase/supabase-js';
-
-  const supabase = createClient(
-    import.meta.env.PUBLIC_SUPABASE_URL,
-    import.meta.env.PUBLIC_SUPABASE_ANON_KEY
-  );
-
-  function getCookie(name: string): string | null {
-    const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
-    return match ? match[2] : null;
-  }
-
-  const accessToken = getCookie('sb-access-token');
-  const refreshToken = getCookie('sb-refresh-token');
-
-  if (accessToken && refreshToken) {
-    supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
-  }
-
   // === Tabs ===
   const tabs = document.querySelectorAll('[data-tab]');
   const panels = document.querySelectorAll('[data-panel]');
@@ -186,20 +165,30 @@ const annullate = (prenotazioni || []).filter((p: any) => p.stato === 'annullata
     });
   });
 
+  // Helper per chiamate API con gestione errori
+  async function apiCall(url: string, method: string, body: Record<string, unknown>) {
+    const res = await fetch(url, {
+      method,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) {
+      const result = await res.json();
+      throw new Error(result.error || 'Errore del server');
+    }
+    return res.json();
+  }
+
   // === Conferma prenotazione ===
   document.querySelectorAll('[data-confirm-prenotazione]').forEach((btn) => {
     btn.addEventListener('click', async () => {
       const prenId = (btn as HTMLElement).getAttribute('data-confirm-prenotazione')!;
-      const { error } = await supabase
-        .from('prenotazioni')
-        .update({ stato: 'confermata' })
-        .eq('id', prenId);
-
-      if (error) {
-        alert('Errore: ' + error.message);
-        return;
+      try {
+        await apiCall('/api/prenotazioni-stato', 'PATCH', { prenotazione_id: prenId, stato: 'confermata' });
+        window.location.reload();
+      } catch (e: any) {
+        alert('Errore: ' + e.message);
       }
-      window.location.reload();
     });
   });
 
@@ -207,18 +196,13 @@ const annullate = (prenotazioni || []).filter((p: any) => p.stato === 'annullata
   document.querySelectorAll('[data-annulla-prenotazione]').forEach((btn) => {
     btn.addEventListener('click', async () => {
       if (!confirm('Sei sicuro di voler annullare questa prenotazione?')) return;
-
       const prenId = (btn as HTMLElement).getAttribute('data-annulla-prenotazione')!;
-      const { error } = await supabase
-        .from('prenotazioni')
-        .update({ stato: 'annullata' })
-        .eq('id', prenId);
-
-      if (error) {
-        alert('Errore: ' + error.message);
-        return;
+      try {
+        await apiCall('/api/prenotazioni-stato', 'PATCH', { prenotazione_id: prenId, stato: 'annullata' });
+        window.location.reload();
+      } catch (e: any) {
+        alert('Errore: ' + e.message);
       }
-      window.location.reload();
     });
   });
 
@@ -242,20 +226,12 @@ const annullate = (prenotazioni || []).filter((p: any) => p.stato === 'annullata
 
       if (!socioId) return;
 
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      const { error } = await supabase.from('prenotazioni_soci').insert([{
-        prenotazione_id: prenId,
-        socio_id: socioId,
-        aggiunto_da: user.id,
-      }]);
-
-      if (error) {
-        alert('Errore: ' + error.message);
-        return;
+      try {
+        await apiCall('/api/prenotazioni-soci', 'POST', { prenotazione_id: prenId, socio_id: socioId });
+        window.location.reload();
+      } catch (e: any) {
+        alert('Errore: ' + e.message);
       }
-      window.location.reload();
     });
   });
 
@@ -267,65 +243,64 @@ const annullate = (prenotazioni || []).filter((p: any) => p.stato === 'annullata
 
       if (!confirm('Rimuovere questo partecipante dalla prenotazione?')) return;
 
-      const { error } = await supabase
-        .from('prenotazioni_soci')
-        .delete()
-        .eq('prenotazione_id', prenId)
-        .eq('socio_id', socioId);
-
-      if (error) {
-        alert('Errore: ' + error.message);
-        return;
+      try {
+        await apiCall('/api/prenotazioni-soci', 'DELETE', { prenotazione_id: prenId, socio_id: socioId });
+        window.location.reload();
+      } catch (e: any) {
+        alert('Errore: ' + e.message);
       }
-      window.location.reload();
     });
   });
 
   // === Export partecipanti Excel ===
   import * as XLSX from 'xlsx';
 
-  const partecipantiData = JSON.parse(document.getElementById('partecipanti-data')?.textContent || '{}');
-  const sociData = JSON.parse(document.getElementById('soci-data')?.textContent || '[]');
-
-  // Crea mappa soci per ID
-  const sociMap: Record<string, any> = {};
-  for (const s of sociData) {
-    sociMap[s.id] = s;
-  }
-
   document.querySelectorAll('[data-export-partecipanti]').forEach((btn) => {
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click', async () => {
       const prenId = (btn as HTMLElement).getAttribute('data-export-partecipanti')!;
       const arrivo = (btn as HTMLElement).getAttribute('data-export-arrivo')!;
       const partenza = (btn as HTMLElement).getAttribute('data-export-partenza')!;
 
-      const partecipanti = partecipantiData[prenId] || [];
+      (btn as HTMLButtonElement).textContent = 'Caricamento...';
+      (btn as HTMLButtonElement).disabled = true;
 
-      if (partecipanti.length === 0) {
-        alert('Nessun partecipante da esportare.');
-        return;
+      try {
+        const res = await fetch(`/api/prenotazioni-partecipanti?prenotazione_id=${prenId}`);
+        if (!res.ok) {
+          alert('Errore nel caricamento dei partecipanti.');
+          return;
+        }
+
+        const partecipanti = await res.json();
+
+        if (partecipanti.length === 0) {
+          alert('Nessun partecipante da esportare.');
+          return;
+        }
+
+        const rows = partecipanti.map((p: any) => ({
+          'Cognome': p.cognome || '',
+          'Nome': p.nome || '',
+          'Email': p.email || '',
+          'Telefono': p.telefono || '',
+        }));
+
+        const ws = XLSX.utils.json_to_sheet(rows);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Partecipanti');
+
+        const colWidths = Object.keys(rows[0]).map((key) => ({
+          wch: Math.max(key.length, ...rows.map((r: any) => String(r[key]).length)) + 2,
+        }));
+        ws['!cols'] = colWidths;
+
+        XLSX.writeFile(wb, `prenotazione_${arrivo}_${partenza}.xlsx`);
+      } catch {
+        alert('Errore di connessione. Riprova.');
+      } finally {
+        (btn as HTMLButtonElement).textContent = 'Esporta Excel';
+        (btn as HTMLButtonElement).disabled = false;
       }
-
-      const rows = partecipanti.map((p: any) => {
-        const full = sociMap[p.id] || p;
-        return {
-          'Cognome': full.cognome || '',
-          'Nome': full.nome || '',
-          'Email': full.email || '',
-          'Telefono': full.telefono || '',
-        };
-      });
-
-      const ws = XLSX.utils.json_to_sheet(rows);
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, 'Partecipanti');
-
-      const colWidths = Object.keys(rows[0]).map((key) => ({
-        wch: Math.max(key.length, ...rows.map((r: any) => String(r[key]).length)) + 2,
-      }));
-      ws['!cols'] = colWidths;
-
-      XLSX.writeFile(wb, `prenotazione_${arrivo}_${partenza}.xlsx`);
     });
   });
 </script>

@@ -23,13 +23,6 @@ if (accessToken) {
 </SociLayout>
 
 <script>
-  import { createClient } from '@supabase/supabase-js';
-
-  const supabase = createClient(
-    import.meta.env.PUBLIC_SUPABASE_URL,
-    import.meta.env.PUBLIC_SUPABASE_ANON_KEY
-  );
-
   const form = document.getElementById('auth-form') as HTMLFormElement;
   const errorDiv = document.getElementById('auth-error')!;
 
@@ -45,26 +38,29 @@ if (accessToken) {
     submitBtn.textContent = 'Accesso in corso...';
     submitBtn.disabled = true;
 
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    try {
+      const res = await fetch('/api/auth/signin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
 
-    if (error) {
-      errorDiv.textContent = error.message === 'Invalid login credentials'
-        ? 'Email o password non corretti.'
-        : 'Errore durante l\'accesso. Riprova.';
+      const result = await res.json();
+
+      if (!res.ok) {
+        errorDiv.textContent = result.error || 'Errore durante l\'accesso. Riprova.';
+        errorDiv.hidden = false;
+        submitBtn.textContent = 'Accedi';
+        submitBtn.disabled = false;
+        return;
+      }
+
+      window.location.href = '/soci/';
+    } catch {
+      errorDiv.textContent = 'Errore di connessione. Riprova.';
       errorDiv.hidden = false;
       submitBtn.textContent = 'Accedi';
       submitBtn.disabled = false;
-      return;
-    }
-
-    if (data.session) {
-      // Salva i token nei cookie
-      document.cookie = `sb-access-token=${data.session.access_token}; path=/; max-age=3600; SameSite=Lax`;
-      document.cookie = `sb-refresh-token=${data.session.refresh_token}; path=/; max-age=604800; SameSite=Lax`;
-      window.location.href = '/soci/';
     }
   });
 </script>

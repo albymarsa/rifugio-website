@@ -63,14 +63,6 @@ if (accessToken) {
 </SociLayout>
 
 <script>
-  import { createClient } from '@supabase/supabase-js';
-
-  const supabase = createClient(
-    import.meta.env.PUBLIC_SUPABASE_URL,
-    import.meta.env.PUBLIC_SUPABASE_ANON_KEY
-  );
-
-  let currentUserId: string | null = null;
   let currentUserEmail: string | null = null;
 
   // === STEP 1: Registrazione account ===
@@ -98,34 +90,43 @@ if (accessToken) {
     submitBtn.textContent = 'Creazione account...';
     submitBtn.disabled = true;
 
-    const { data, error } = await supabase.auth.signUp({ email, password });
+    try {
+      const res = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
 
-    if (error) {
-      authError.textContent = 'Errore nella registrazione: ' + error.message;
+      const result = await res.json();
+
+      if (!res.ok) {
+        authError.textContent = result.error || 'Errore nella registrazione.';
+        authError.hidden = false;
+        submitBtn.textContent = 'Crea account';
+        submitBtn.disabled = false;
+        return;
+      }
+
+      if (result.needsProfile) {
+        currentUserEmail = email;
+
+        // Passa allo step 2
+        document.getElementById('step-account')!.hidden = true;
+        document.getElementById('step-profile')!.hidden = false;
+
+        // Pre-compila l'email
+        const emailInput = document.getElementById('profile-email') as HTMLInputElement;
+        if (emailInput) emailInput.value = email;
+      } else if (result.needsEmailConfirm) {
+        // Se la conferma email e' attiva
+        authSuccess.textContent = 'Account creato! Controlla la tua email per confermare, poi accedi.';
+        authSuccess.hidden = false;
+        submitBtn.textContent = 'Crea account';
+        submitBtn.disabled = false;
+      }
+    } catch {
+      authError.textContent = 'Errore di connessione. Riprova.';
       authError.hidden = false;
-      submitBtn.textContent = 'Crea account';
-      submitBtn.disabled = false;
-      return;
-    }
-
-    if (data.session) {
-      // Salva token nei cookie
-      document.cookie = `sb-access-token=${data.session.access_token}; path=/; max-age=3600; SameSite=Lax`;
-      document.cookie = `sb-refresh-token=${data.session.refresh_token}; path=/; max-age=604800; SameSite=Lax`;
-      currentUserId = data.user?.id || null;
-      currentUserEmail = email;
-
-      // Passa allo step 2
-      document.getElementById('step-account')!.hidden = true;
-      document.getElementById('step-profile')!.hidden = false;
-
-      // Pre-compila l'email
-      const emailInput = document.getElementById('profile-email') as HTMLInputElement;
-      if (emailInput) emailInput.value = email;
-    } else {
-      // Se la conferma email e' attiva
-      authSuccess.textContent = 'Account creato! Controlla la tua email per confermare, poi accedi.';
-      authSuccess.hidden = false;
       submitBtn.textContent = 'Crea account';
       submitBtn.disabled = false;
     }
@@ -147,29 +148,39 @@ if (accessToken) {
     submitBtn.disabled = true;
 
     const formData = new FormData(profileForm);
-    const profileData = {
-      id: currentUserId,
-      nome: formData.get('nome'),
-      cognome: formData.get('cognome'),
-      email: currentUserEmail,
-      telefono: formData.get('telefono') || null,
-    };
-
-    const { error } = await supabase.from('profili').insert([profileData]);
-
     const msgEl = profileForm.querySelector('[data-message]') as HTMLElement;
 
-    if (error) {
-      msgEl.textContent = 'Errore nel salvataggio: ' + error.message;
+    try {
+      const res = await fetch('/api/auth/profile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          nome: formData.get('nome'),
+          cognome: formData.get('cognome'),
+          telefono: formData.get('telefono') || null,
+        }),
+      });
+
+      const result = await res.json();
+
+      if (!res.ok) {
+        msgEl.textContent = result.error || 'Errore nel salvataggio.';
+        msgEl.className = 'form-message form-message--error';
+        msgEl.hidden = false;
+        submitBtn.textContent = 'Completa registrazione';
+        submitBtn.disabled = false;
+        return;
+      }
+
+      // Redirect alla dashboard
+      window.location.href = '/soci/';
+    } catch {
+      msgEl.textContent = 'Errore di connessione. Riprova.';
       msgEl.className = 'form-message form-message--error';
       msgEl.hidden = false;
       submitBtn.textContent = 'Completa registrazione';
       submitBtn.disabled = false;
-      return;
     }
-
-    // Redirect alla dashboard
-    window.location.href = '/soci/';
   });
 </script>
 

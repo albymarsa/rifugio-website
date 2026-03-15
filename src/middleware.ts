@@ -54,12 +54,14 @@ export const onRequest = defineMiddleware(async (context, next) => {
       maxAge: 3600,
       sameSite: 'lax',
       secure: true,
+      httpOnly: true,
     });
     context.cookies.set('sb-refresh-token', data.session.refresh_token, {
       path: '/',
       maxAge: 604800,
       sameSite: 'lax',
       secure: true,
+      httpOnly: true,
     });
   }
 
