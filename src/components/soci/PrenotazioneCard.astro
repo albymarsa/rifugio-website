@@ -1,0 +1,342 @@
+---
+interface Partecipante {
+  id: string;
+  nome: string;
+  cognome: string;
+}
+
+interface Prenotazione {
+  id: string;
+  data_arrivo: string;
+  data_partenza: string;
+  num_persone: number;
+  note?: string;
+  richiedente_nome?: string;
+  richiedente_email?: string;
+  richiedente_telefono?: string;
+  stato: string;
+  created_at: string;
+}
+
+interface Props {
+  prenotazione: Prenotazione;
+  partecipanti?: Partecipante[];
+  /** Mostra azioni admin (conferma, annulla, modifica, associa socio) */
+  showAdmin?: boolean;
+  /** Soci del gruppo disponibili per associazione (non ancora associati) */
+  sociDisponibili?: Partecipante[];
+}
+
+const { prenotazione, partecipanti = [], showAdmin = false, sociDisponibili = [] } = Astro.props;
+
+function formatDate(dateStr: string): string {
+  try {
+    return new Date(dateStr + 'T00:00:00').toLocaleDateString('it-IT', {
+      day: '2-digit',
+      month: 'long',
+      year: 'numeric',
+    });
+  } catch {
+    return dateStr;
+  }
+}
+
+const statoBadgeClass: Record<string, string> = {
+  da_confermare: 'pren-card__badge--pending',
+  confermata: 'pren-card__badge--confirmed',
+  annullata: 'pren-card__badge--cancelled',
+};
+
+const statoLabels: Record<string, string> = {
+  da_confermare: 'Da confermare',
+  confermata: 'Confermata',
+  annullata: 'Annullata',
+};
+---
+
+<div class="pren-card" data-prenotazione-id={prenotazione.id}>
+  <div class="pren-card__header">
+    <div>
+      <div class="pren-card__dates">
+        {formatDate(prenotazione.data_arrivo)} &rarr; {formatDate(prenotazione.data_partenza)}
+      </div>
+      <span class:list={['pren-card__badge', statoBadgeClass[prenotazione.stato] || '']}>
+        {statoLabels[prenotazione.stato] || prenotazione.stato}
+      </span>
+    </div>
+    <div class="pren-card__persone">
+      {prenotazione.num_persone} {prenotazione.num_persone === 1 ? 'persona' : 'persone'}
+    </div>
+  </div>
+
+  {showAdmin && prenotazione.richiedente_nome && (
+    <div class="pren-card__richiedente">
+      <span class="pren-card__label">Richiedente</span>
+      <span>{prenotazione.richiedente_nome}</span>
+      {prenotazione.richiedente_email && <span class="pren-card__sub">{prenotazione.richiedente_email}</span>}
+      {prenotazione.richiedente_telefono && <span class="pren-card__sub">{prenotazione.richiedente_telefono}</span>}
+    </div>
+  )}
+
+  {prenotazione.note && (
+    <div class="pren-card__note">
+      <span class="pren-card__label">Note</span>
+      <span>{prenotazione.note}</span>
+    </div>
+  )}
+
+  <div class="pren-card__partecipanti">
+    <span class="pren-card__label">Partecipanti associati</span>
+    {partecipanti.length > 0 ? (
+      <ul class="pren-card__lista">
+        {partecipanti.map((p) => (
+          <li>
+            {p.nome} {p.cognome}
+            {showAdmin && (
+              <button class="pren-card__remove-btn" data-remove-socio={p.id} data-prenotazione={prenotazione.id} title="Rimuovi">
+                &times;
+              </button>
+            )}
+          </li>
+        ))}
+      </ul>
+    ) : (
+      <span class="pren-card__empty">Nessun partecipante associato</span>
+    )}
+  </div>
+
+  <!-- Aggiungi partecipante (soci del gruppo per utenti normali, tutti i soci per admin) -->
+  {sociDisponibili.length > 0 && (
+    <div class="pren-card__add" data-add-section={prenotazione.id}>
+      <button class="btn btn-outline pren-card__add-btn" data-toggle-add={prenotazione.id}>
+        + Aggiungi partecipante
+      </button>
+      <div class="pren-card__add-form" data-add-form={prenotazione.id} hidden>
+        <select data-add-select={prenotazione.id} class="pren-card__select">
+          <option value="">Seleziona socio...</option>
+          {sociDisponibili.map((s) => (
+            <option value={s.id}>{s.nome} {s.cognome}</option>
+          ))}
+        </select>
+        <button class="btn btn-primary pren-card__confirm-btn" data-confirm-add={prenotazione.id}>
+          Associa
+        </button>
+      </div>
+    </div>
+  )}
+
+  {showAdmin && prenotazione.stato === 'da_confermare' && (
+    <div class="pren-card__admin-actions">
+      <button class="btn btn-primary pren-card__action-btn" data-confirm-prenotazione={prenotazione.id}>
+        Conferma
+      </button>
+      <button class="btn btn-outline pren-card__action-btn pren-card__action-btn--cancel" data-annulla-prenotazione={prenotazione.id}>
+        Annulla
+      </button>
+    </div>
+  )}
+
+  {showAdmin && prenotazione.stato === 'confermata' && (
+    <div class="pren-card__admin-actions">
+      <button class="btn btn-outline pren-card__action-btn pren-card__action-btn--cancel" data-annulla-prenotazione={prenotazione.id}>
+        Annulla prenotazione
+      </button>
+    </div>
+  )}
+</div>
+
+<style>
+  .pren-card {
+    border: 1px solid var(--color-border);
+    padding: 2rem;
+    margin-bottom: 1.5rem;
+    background: var(--color-white);
+  }
+
+  .pren-card__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .pren-card__dates {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 0.4rem;
+  }
+
+  .pren-card__persone {
+    font-size: 0.9rem;
+    color: var(--color-gray);
+    white-space: nowrap;
+  }
+
+  .pren-card__badge {
+    display: inline-block;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 0.2rem 0.6rem;
+  }
+
+  .pren-card__badge--pending {
+    background: #fff8e1;
+    color: #f59e0b;
+  }
+
+  .pren-card__badge--confirmed {
+    background: #f0f7ec;
+    color: var(--color-accent);
+  }
+
+  .pren-card__badge--cancelled {
+    background: #fdf0f0;
+    color: #9b1c1c;
+  }
+
+  .pren-card__label {
+    display: block;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--color-gray);
+    margin-bottom: 0.3rem;
+  }
+
+  .pren-card__richiedente,
+  .pren-card__note {
+    margin-bottom: 1rem;
+    font-size: 0.95rem;
+  }
+
+  .pren-card__sub {
+    display: block;
+    font-size: 0.85rem;
+    color: var(--color-gray);
+  }
+
+  .pren-card__partecipanti {
+    margin-bottom: 1rem;
+  }
+
+  .pren-card__lista {
+    list-style: none;
+    padding: 0;
+  }
+
+  .pren-card__lista li {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 0;
+    font-size: 0.9rem;
+    border-bottom: 1px solid var(--color-off-white);
+  }
+
+  .pren-card__lista li:last-child {
+    border-bottom: none;
+  }
+
+  .pren-card__remove-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--color-gray-light);
+    font-size: 1.1rem;
+    padding: 0 0.3rem;
+    transition: color 0.2s;
+  }
+
+  .pren-card__remove-btn:hover {
+    color: #9b1c1c;
+  }
+
+  .pren-card__empty {
+    font-size: 0.85rem;
+    color: var(--color-gray-light);
+    font-style: italic;
+  }
+
+  .pren-card__add {
+    margin-bottom: 1rem;
+  }
+
+  .pren-card__add-btn {
+    padding: 0.5rem 1.2rem;
+    font-size: 0.75rem;
+  }
+
+  .pren-card__add-form {
+    display: flex;
+    gap: 0.8rem;
+    align-items: center;
+    margin-top: 0.8rem;
+  }
+
+  .pren-card__select {
+    flex: 1;
+    padding: 0.7rem 1rem;
+    border: 1px solid var(--color-border);
+    font-size: 0.9rem;
+    font-family: var(--font-main);
+    background: var(--color-white);
+  }
+
+  .pren-card__select:focus {
+    outline: none;
+    border-color: var(--color-black);
+  }
+
+  .pren-card__confirm-btn {
+    padding: 0.7rem 1.5rem;
+    font-size: 0.75rem;
+    white-space: nowrap;
+  }
+
+  .pren-card__admin-actions {
+    display: flex;
+    gap: 0.8rem;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--color-border);
+  }
+
+  .pren-card__action-btn {
+    padding: 0.6rem 1.5rem;
+    font-size: 0.75rem;
+  }
+
+  .pren-card__action-btn--cancel {
+    border-color: #9b1c1c;
+    color: #9b1c1c;
+  }
+
+  .pren-card__action-btn--cancel:hover {
+    background: #9b1c1c;
+    color: var(--color-white);
+  }
+
+  @media (max-width: 768px) {
+    .pren-card {
+      padding: 1.5rem;
+    }
+
+    .pren-card__header {
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .pren-card__add-form {
+      flex-direction: column;
+    }
+
+    .pren-card__admin-actions {
+      flex-direction: column;
+    }
+  }
+</style>

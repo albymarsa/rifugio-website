@@ -35,8 +35,15 @@ const { data: allMembers, error } = await supabase
 
 <SociLayout title="Gestione Soci">
   <div class="admin-page">
-    <div class="section-label">Amministrazione</div>
-    <h1 class="section-title">Gestione Soci</h1>
+    <div class="admin-page__header">
+      <div>
+        <div class="section-label">Amministrazione</div>
+        <h1 class="section-title">Gestione Soci</h1>
+      </div>
+      <a href="/soci/prenotazioni" class="btn btn-outline">
+        Gestione Prenotazioni
+      </a>
+    </div>
     <p class="admin-page__intro">
       Elenco completo di tutti i soci dell'associazione.
     </p>
@@ -54,6 +61,15 @@ const { data: allMembers, error } = await supabase
 <style>
   .admin-page {
     padding-top: 1rem;
+  }
+
+  .admin-page__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 0.5rem;
   }
 
   .admin-page__intro {

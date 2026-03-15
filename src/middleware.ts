@@ -4,8 +4,10 @@ import { createClient } from '@supabase/supabase-js';
 export const onRequest = defineMiddleware(async (context, next) => {
   const { pathname } = context.url;
 
-  // Solo le pagine /soci/* sono protette
-  if (!pathname.startsWith('/soci')) {
+  // Pagine che richiedono autenticazione
+  const isProtected = pathname.startsWith('/soci') || pathname === '/prenota' || pathname === '/prenota/';
+
+  if (!isProtected) {
     return next();
   }
 
@@ -64,8 +66,9 @@ export const onRequest = defineMiddleware(async (context, next) => {
   // Rendi l'utente disponibile alle pagine
   context.locals.user = data.user;
 
-  // Per la pagina admin, verifica che l'utente sia un fondatore
-  if (pathname === '/soci/admin' || pathname === '/soci/admin/') {
+  // Per le pagine admin, verifica che l'utente sia un fondatore
+  if (pathname === '/soci/admin' || pathname === '/soci/admin/' ||
+      pathname === '/soci/prenotazioni' || pathname === '/soci/prenotazioni/') {
     const { data: socioData } = await supabase
       .from('soci')
       .select('tipo_socio')

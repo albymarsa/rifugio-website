@@ -1,6 +1,33 @@
 ---
+export const prerender = false;
+
 import Layout from '../layouts/Layout.astro';
 import BookingForm from '../components/BookingForm.astro';
+import { createClient } from '@supabase/supabase-js';
+
+const user = Astro.locals.user;
+
+// Carica profilo utente
+let profilo: any = null;
+if (user) {
+  const supabase = createClient(
+    import.meta.env.PUBLIC_SUPABASE_URL,
+    import.meta.env.PUBLIC_SUPABASE_ANON_KEY
+  );
+
+  const accessToken = Astro.cookies.get('sb-access-token')?.value;
+  const refreshToken = Astro.cookies.get('sb-refresh-token')?.value;
+
+  if (accessToken && refreshToken) {
+    await supabase.auth.setSession({
+      access_token: accessToken,
+      refresh_token: refreshToken,
+    });
+  }
+
+  const { data } = await supabase.from('profili').select('*').eq('id', user.id).single();
+  profilo = data;
+}
 ---
 
 <Layout title="Prenota — Rifugio Alpine">
@@ -17,7 +44,14 @@ import BookingForm from '../components/BookingForm.astro';
 
   <section class="section">
     <div class="container">
-      <BookingForm />
+      {profilo ? (
+        <BookingForm profilo={profilo} />
+      ) : (
+        <div class="booking-no-profile">
+          <p>Per richiedere una prenotazione devi prima completare il tuo profilo.</p>
+          <a href="/soci/" class="btn btn-primary">Vai alla dashboard</a>
+        </div>
+      )}
     </div>
   </section>
 </Layout>
@@ -37,5 +71,17 @@ import BookingForm from '../components/BookingForm.astro';
     font-size: 1.1rem;
     color: var(--color-gray);
     max-width: 560px;
+  }
+
+  .booking-no-profile {
+    padding: 3rem 2rem;
+    background: var(--color-off-white);
+    text-align: center;
+  }
+
+  .booking-no-profile p {
+    max-width: none;
+    color: var(--color-gray);
+    margin-bottom: 1.5rem;
   }
 </style>

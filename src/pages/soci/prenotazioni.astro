@@ -1,0 +1,366 @@
+---
+export const prerender = false;
+
+import SociLayout from '../../layouts/SociLayout.astro';
+import PrenotazioneCard from '../../components/soci/PrenotazioneCard.astro';
+import { createClient } from '@supabase/supabase-js';
+
+const user = Astro.locals.user;
+if (!user) {
+  return Astro.redirect('/soci/login');
+}
+
+const supabase = createClient(
+  import.meta.env.PUBLIC_SUPABASE_URL,
+  import.meta.env.PUBLIC_SUPABASE_ANON_KEY
+);
+
+const accessToken = Astro.cookies.get('sb-access-token')?.value;
+const refreshToken = Astro.cookies.get('sb-refresh-token')?.value;
+
+if (accessToken && refreshToken) {
+  await supabase.auth.setSession({
+    access_token: accessToken,
+    refresh_token: refreshToken,
+  });
+}
+
+// Carica tutte le prenotazioni
+const { data: prenotazioni, error: prenError } = await supabase
+  .from('prenotazioni')
+  .select('*')
+  .order('created_at', { ascending: false });
+
+// Carica tutti i soci (per associazione)
+const { data: allSoci } = await supabase
+  .from('soci')
+  .select('id, nome, cognome')
+  .order('cognome');
+
+// Carica tutte le associazioni
+const prenIds = (prenotazioni || []).map((p: any) => p.id);
+let associazioni: any[] = [];
+if (prenIds.length > 0) {
+  const { data: assocData } = await supabase
+    .from('prenotazioni_soci')
+    .select('prenotazione_id, socio_id')
+    .in('prenotazione_id', prenIds);
+  associazioni = assocData || [];
+}
+
+// Mappa partecipanti per prenotazione
+const partecipantiMap: Record<string, any[]> = {};
+for (const pren of (prenotazioni || [])) {
+  const sociIds = associazioni
+    .filter((a: any) => a.prenotazione_id === pren.id)
+    .map((a: any) => a.socio_id);
+  partecipantiMap[pren.id] = (allSoci || []).filter((s: any) => sociIds.includes(s.id));
+}
+
+// Soci disponibili per ogni prenotazione (non ancora associati)
+function getSociDisponibili(prenotazioneId: string) {
+  const giAssociati = (partecipantiMap[prenotazioneId] || []).map((p: any) => p.id);
+  return (allSoci || []).filter((s: any) => !giAssociati.includes(s.id));
+}
+
+// Raggruppa per stato
+const daConfermare = (prenotazioni || []).filter((p: any) => p.stato === 'da_confermare');
+const confermate = (prenotazioni || []).filter((p: any) => p.stato === 'confermata');
+const annullate = (prenotazioni || []).filter((p: any) => p.stato === 'annullata');
+---
+
+<SociLayout title="Gestione Prenotazioni">
+  <div class="pren-admin">
+    <div class="section-label">Amministrazione</div>
+    <h1 class="section-title">Gestione Prenotazioni</h1>
+
+    {prenError && (
+      <div class="alert alert--error">
+        Errore nel caricamento dei dati. Riprova.
+      </div>
+    )}
+
+    <!-- Tabs -->
+    <div class="pren-admin__tabs">
+      <button class="pren-admin__tab pren-admin__tab--active" data-tab="pending">
+        Da confermare
+        {daConfermare.length > 0 && <span class="pren-admin__tab-count">{daConfermare.length}</span>}
+      </button>
+      <button class="pren-admin__tab" data-tab="confirmed">
+        Confermate
+        {confermate.length > 0 && <span class="pren-admin__tab-count">{confermate.length}</span>}
+      </button>
+      <button class="pren-admin__tab" data-tab="cancelled">
+        Annullate
+        {annullate.length > 0 && <span class="pren-admin__tab-count">{annullate.length}</span>}
+      </button>
+    </div>
+
+    <!-- Tab: Da confermare -->
+    <div class="pren-admin__panel" data-panel="pending">
+      {daConfermare.length === 0 ? (
+        <p class="pren-admin__empty">Nessuna richiesta in attesa.</p>
+      ) : (
+        daConfermare.map((pren) => (
+          <PrenotazioneCard
+            prenotazione={pren}
+            partecipanti={partecipantiMap[pren.id] || []}
+            showAdmin={true}
+            sociDisponibili={getSociDisponibili(pren.id)}
+          />
+        ))
+      )}
+    </div>
+
+    <!-- Tab: Confermate -->
+    <div class="pren-admin__panel pren-admin__panel--hidden" data-panel="confirmed">
+      {confermate.length === 0 ? (
+        <p class="pren-admin__empty">Nessuna prenotazione confermata.</p>
+      ) : (
+        confermate.map((pren) => (
+          <PrenotazioneCard
+            prenotazione={pren}
+            partecipanti={partecipantiMap[pren.id] || []}
+            showAdmin={true}
+            sociDisponibili={getSociDisponibili(pren.id)}
+          />
+        ))
+      )}
+    </div>
+
+    <!-- Tab: Annullate -->
+    <div class="pren-admin__panel pren-admin__panel--hidden" data-panel="cancelled">
+      {annullate.length === 0 ? (
+        <p class="pren-admin__empty">Nessuna prenotazione annullata.</p>
+      ) : (
+        annullate.map((pren) => (
+          <PrenotazioneCard
+            prenotazione={pren}
+            partecipanti={partecipantiMap[pren.id] || []}
+            showAdmin={true}
+            sociDisponibili={getSociDisponibili(pren.id)}
+          />
+        ))
+      )}
+    </div>
+  </div>
+</SociLayout>
+
+<script>
+  import { createClient } from '@supabase/supabase-js';
+
+  const supabase = createClient(
+    import.meta.env.PUBLIC_SUPABASE_URL,
+    import.meta.env.PUBLIC_SUPABASE_ANON_KEY
+  );
+
+  function getCookie(name: string): string | null {
+    const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+    return match ? match[2] : null;
+  }
+
+  const accessToken = getCookie('sb-access-token');
+  const refreshToken = getCookie('sb-refresh-token');
+
+  if (accessToken && refreshToken) {
+    supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
+  }
+
+  // === Tabs ===
+  const tabs = document.querySelectorAll('[data-tab]');
+  const panels = document.querySelectorAll('[data-panel]');
+
+  tabs.forEach((tab) => {
+    tab.addEventListener('click', () => {
+      const target = (tab as HTMLElement).getAttribute('data-tab')!;
+      tabs.forEach((t) => t.classList.remove('pren-admin__tab--active'));
+      tab.classList.add('pren-admin__tab--active');
+      panels.forEach((p) => {
+        (p as HTMLElement).classList.toggle('pren-admin__panel--hidden',
+          p.getAttribute('data-panel') !== target
+        );
+      });
+    });
+  });
+
+  // === Conferma prenotazione ===
+  document.querySelectorAll('[data-confirm-prenotazione]').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      const prenId = (btn as HTMLElement).getAttribute('data-confirm-prenotazione')!;
+      const { error } = await supabase
+        .from('prenotazioni')
+        .update({ stato: 'confermata' })
+        .eq('id', prenId);
+
+      if (error) {
+        alert('Errore: ' + error.message);
+        return;
+      }
+      window.location.reload();
+    });
+  });
+
+  // === Annulla prenotazione ===
+  document.querySelectorAll('[data-annulla-prenotazione]').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      if (!confirm('Sei sicuro di voler annullare questa prenotazione?')) return;
+
+      const prenId = (btn as HTMLElement).getAttribute('data-annulla-prenotazione')!;
+      const { error } = await supabase
+        .from('prenotazioni')
+        .update({ stato: 'annullata' })
+        .eq('id', prenId);
+
+      if (error) {
+        alert('Errore: ' + error.message);
+        return;
+      }
+      window.location.reload();
+    });
+  });
+
+  // === Aggiungi partecipante ===
+  document.querySelectorAll('[data-toggle-add]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const prenId = (btn as HTMLElement).getAttribute('data-toggle-add')!;
+      const form = document.querySelector(`[data-add-form="${prenId}"]`) as HTMLElement;
+      if (form) {
+        form.hidden = !form.hidden;
+        (btn as HTMLElement).hidden = !form.hidden;
+      }
+    });
+  });
+
+  document.querySelectorAll('[data-confirm-add]').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      const prenId = (btn as HTMLElement).getAttribute('data-confirm-add')!;
+      const select = document.querySelector(`[data-add-select="${prenId}"]`) as HTMLSelectElement;
+      const socioId = select?.value;
+
+      if (!socioId) return;
+
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { error } = await supabase.from('prenotazioni_soci').insert([{
+        prenotazione_id: prenId,
+        socio_id: socioId,
+        aggiunto_da: user.id,
+      }]);
+
+      if (error) {
+        alert('Errore: ' + error.message);
+        return;
+      }
+      window.location.reload();
+    });
+  });
+
+  // === Rimuovi partecipante ===
+  document.querySelectorAll('[data-remove-socio]').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      const socioId = (btn as HTMLElement).getAttribute('data-remove-socio')!;
+      const prenId = (btn as HTMLElement).getAttribute('data-prenotazione')!;
+
+      if (!confirm('Rimuovere questo partecipante dalla prenotazione?')) return;
+
+      const { error } = await supabase
+        .from('prenotazioni_soci')
+        .delete()
+        .eq('prenotazione_id', prenId)
+        .eq('socio_id', socioId);
+
+      if (error) {
+        alert('Errore: ' + error.message);
+        return;
+      }
+      window.location.reload();
+    });
+  });
+</script>
+
+<style>
+  .pren-admin {
+    padding-top: 1rem;
+  }
+
+  .pren-admin__tabs {
+    display: flex;
+    gap: 0;
+    margin-bottom: 2rem;
+    border-bottom: 2px solid var(--color-border);
+  }
+
+  .pren-admin__tab {
+    background: none;
+    border: none;
+    padding: 0.8rem 1.5rem;
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--color-gray);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .pren-admin__tab:hover {
+    color: var(--color-black);
+  }
+
+  .pren-admin__tab--active {
+    color: var(--color-black);
+    border-bottom-color: var(--color-black);
+  }
+
+  .pren-admin__tab-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.4rem;
+    height: 1.4rem;
+    padding: 0 0.4rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    background: var(--color-off-white);
+    color: var(--color-gray);
+    border-radius: 50%;
+  }
+
+  .pren-admin__tab--active .pren-admin__tab-count {
+    background: var(--color-black);
+    color: var(--color-white);
+  }
+
+  .pren-admin__panel--hidden {
+    display: none;
+  }
+
+  .pren-admin__empty {
+    text-align: center;
+    padding: 3rem;
+    color: var(--color-gray);
+  }
+
+  .alert--error {
+    background-color: #fdf0f0;
+    color: #9b1c1c;
+    border-left: 3px solid #9b1c1c;
+    padding: 1rem 1.5rem;
+    margin-bottom: 1.5rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+  }
+
+  @media (max-width: 768px) {
+    .pren-admin__tab {
+      padding: 0.6rem 1rem;
+      font-size: 0.75rem;
+    }
+  }
+</style>

@@ -4,6 +4,7 @@ export const prerender = false;
 import SociLayout from '../../layouts/SociLayout.astro';
 import MemberCard from '../../components/soci/MemberCard.astro';
 import MemberForm from '../../components/soci/MemberForm.astro';
+import PrenotazioneCard from '../../components/soci/PrenotazioneCard.astro';
 import { createClient } from '@supabase/supabase-js';
 
 const user = Astro.locals.user;
@@ -32,17 +33,19 @@ if (accessToken && refreshToken) {
   }
 }
 
-// Carica i soci registrati dall'utente
-let members: any[] = [];
-let error: any = null;
-let errorMessage = '';
-
 if (sessionError) {
-  // Sessione scaduta o invalida - redirect al login
   Astro.cookies.delete('sb-access-token', { path: '/' });
   Astro.cookies.delete('sb-refresh-token', { path: '/' });
   return Astro.redirect('/soci/login');
 }
+
+// Carica profilo utente
+const { data: profilo } = await supabase.from('profili').select('*').eq('id', user.id).single();
+
+// Carica i soci registrati dall'utente
+let members: any[] = [];
+let error: any = null;
+let errorMessage = '';
 
 const result = await supabase
   .from('soci')
@@ -59,20 +62,93 @@ if (error) {
 
 // Verifica se l'utente e' un fondatore
 const isFounder = members?.some((m: any) => m.tipo_socio === 'fondatore' && m.email === user.email);
+
+// Carica le prenotazioni: quelle create dall'utente + quelle associate ai soci del gruppo
+const memberIds = members.map((m: any) => m.id);
+let prenotazioni: any[] = [];
+let prenotazioniPartecipanti: Record<string, any[]> = {};
+
+// Prenotazioni create dall'utente
+const { data: prenCreate } = await supabase
+  .from('prenotazioni')
+  .select('*')
+  .eq('creata_da', user.id)
+  .order('data_arrivo', { ascending: false });
+
+const prenotazioniCreate = prenCreate || [];
+const prenIdsFromCreate = prenotazioniCreate.map((p: any) => p.id);
+
+// Prenotazioni associate via soci del gruppo
+let prenIdsFromSoci: string[] = [];
+if (memberIds.length > 0) {
+  const { data: associazioni } = await supabase
+    .from('prenotazioni_soci')
+    .select('prenotazione_id, socio_id')
+    .in('socio_id', memberIds);
+
+  if (associazioni && associazioni.length > 0) {
+    prenIdsFromSoci = [...new Set(associazioni.map((a: any) => a.prenotazione_id))];
+
+    // Carica prenotazioni associate non già caricate
+    const missingIds = prenIdsFromSoci.filter((id: string) => !prenIdsFromCreate.includes(id));
+    if (missingIds.length > 0) {
+      const { data: prenExtra } = await supabase
+        .from('prenotazioni')
+        .select('*')
+        .in('id', missingIds);
+      if (prenExtra) prenotazioniCreate.push(...prenExtra);
+    }
+
+    // Mappa partecipanti
+    for (const pren of prenotazioniCreate) {
+      const sociIds = associazioni
+        .filter((a: any) => a.prenotazione_id === pren.id)
+        .map((a: any) => a.socio_id);
+      prenotazioniPartecipanti[pren.id] = members.filter((m: any) => sociIds.includes(m.id));
+    }
+  }
+}
+
+// Ordina per data arrivo desc
+prenotazioni = prenotazioniCreate.sort((a: any, b: any) =>
+  new Date(b.data_arrivo).getTime() - new Date(a.data_arrivo).getTime()
+);
+
+function getSociDisponibili(prenotazioneId: string) {
+  const giAssociati = (prenotazioniPartecipanti[prenotazioneId] || []).map((p: any) => p.id);
+  return members.filter((m: any) => !giAssociati.includes(m.id));
+}
+
+// Dati profilo per il bottone "Usa i miei dati" (serializzati come data attributes)
+const profiloJson = profilo ? JSON.stringify({
+  nome: profilo.nome,
+  cognome: profilo.cognome,
+  email: profilo.email,
+  telefono: profilo.telefono || '',
+}) : null;
 ---
 
 <SociLayout title="Dashboard" showBackLink={false}>
   <div class="dashboard">
     <div class="dashboard__header">
       <div>
-        <div class="section-label">Area Soci</div>
-        <h1 class="section-title">La tua dashboard</h1>
+        <div class="section-label">Area Personale</div>
+        <h1 class="section-title">
+          {profilo ? `Ciao, ${profilo.nome}` : 'La tua dashboard'}
+        </h1>
       </div>
-      {isFounder && (
-        <a href="/soci/admin" class="btn btn-outline">
-          Gestione soci
-        </a>
-      )}
+      <div class="dashboard__header-actions">
+        {isFounder && (
+          <>
+            <a href="/soci/admin" class="btn btn-outline">
+              Gestione soci
+            </a>
+            <a href="/soci/prenotazioni" class="btn btn-outline">
+              Gestione prenotazioni
+            </a>
+          </>
+        )}
+      </div>
     </div>
 
     {error && (
@@ -81,35 +157,78 @@ const isFounder = members?.some((m: any) => m.tipo_socio === 'fondatore' && m.em
       </div>
     )}
 
-    {members && members.length === 0 && (
+    {!profilo && (
       <div class="dashboard__empty">
-        <p>Non hai ancora inserito i tuoi dati di socio.</p>
-        <p>Compila il form qui sotto per completare l'iscrizione.</p>
+        <p>Completa il tuo profilo per poter richiedere prenotazioni.</p>
+        <a href="/soci/registrazione" class="btn btn-primary mt-2">Completa profilo</a>
       </div>
     )}
 
-    <!-- Lista soci registrati -->
-    <div id="members-container">
-      {members && members.map((member) => (
-        <div class="member-wrapper" data-member-id={member.id}>
-          <div class="member-view">
-            <MemberCard member={member} />
-          </div>
+    <!-- Sezione Soci -->
+    <div class="dashboard__section">
+      <h2 class="dashboard__subtitle">I tuoi soci</h2>
+
+      {members.length === 0 ? (
+        <div class="dashboard__empty">
+          <p>Non hai ancora soci registrati nel tuo gruppo.</p>
+          <p>Iscriviti come socio o aggiungi i componenti del tuo gruppo.</p>
         </div>
-      ))}
+      ) : (
+        <div id="members-container">
+          {members.map((member) => (
+            <div class="member-wrapper" data-member-id={member.id}>
+              <div class="member-view">
+                <MemberCard member={member} />
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <!-- Bottone aggiungi componente -->
+      <div class="dashboard__actions">
+        <button id="add-member-btn" class="btn btn-outline">
+          + Aggiungi socio
+        </button>
+      </div>
+
+      <!-- Form nuovo componente -->
+      <div id="new-member-container" hidden>
+        <h2 class="dashboard__subtitle">Nuovo socio</h2>
+        {profiloJson && (
+          <button id="use-my-data-btn" class="btn btn-outline dashboard__use-data-btn" data-profilo={profiloJson}>
+            Usa i miei dati
+          </button>
+        )}
+        <MemberForm formId="new-member-form" submitLabel="Aggiungi" showCancel={true} />
+      </div>
     </div>
 
-    <!-- Bottone aggiungi componente -->
-    <div class="dashboard__actions">
-      <button id="add-member-btn" class="btn btn-outline">
-        + Aggiungi componente del gruppo
-      </button>
-    </div>
-
-    <!-- Form nuovo componente -->
-    <div id="new-member-container" hidden>
-      <h2 class="dashboard__subtitle">Nuovo componente del gruppo</h2>
-      <MemberForm formId="new-member-form" submitLabel="Aggiungi" showCancel={true} />
+    <!-- Sezione Prenotazioni -->
+    <div class="dashboard__prenotazioni">
+      <div class="dashboard__pren-header">
+        <h2 class="dashboard__subtitle">Le tue prenotazioni</h2>
+        {profilo && (
+          <a href="/prenota" class="btn btn-outline dashboard__pren-btn">
+            + Nuova prenotazione
+          </a>
+        )}
+      </div>
+      {prenotazioni.length === 0 ? (
+        <div class="dashboard__empty">
+          <p>Non hai prenotazioni.</p>
+        </div>
+      ) : (
+        <div id="prenotazioni-container">
+          {prenotazioni.map((pren) => (
+            <PrenotazioneCard
+              prenotazione={pren}
+              partecipanti={prenotazioniPartecipanti[pren.id] || []}
+              sociDisponibili={getSociDisponibili(pren.id)}
+            />
+          ))}
+        </div>
+      )}
     </div>
   </div>
 </SociLayout>
@@ -122,7 +241,6 @@ const isFounder = members?.some((m: any) => m.tipo_socio === 'fondatore' && m.em
     import.meta.env.PUBLIC_SUPABASE_ANON_KEY
   );
 
-  // Recupera sessione dai cookie
   function getCookie(name: string): string | null {
     const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
     return match ? match[2] : null;
@@ -135,7 +253,7 @@ const isFounder = members?.some((m: any) => m.tipo_socio === 'fondatore' && m.em
     supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
   }
 
-  // === Aggiungi nuovo componente ===
+  // === Aggiungi nuovo socio ===
   const addBtn = document.getElementById('add-member-btn')!;
   const newContainer = document.getElementById('new-member-container')!;
   const newForm = document.getElementById('new-member-form') as HTMLFormElement;
@@ -151,6 +269,23 @@ const isFounder = members?.some((m: any) => m.tipo_socio === 'fondatore' && m.em
     addBtn.hidden = false;
     newForm.reset();
   });
+
+  // === Usa i miei dati ===
+  const useMyDataBtn = document.getElementById('use-my-data-btn');
+  if (useMyDataBtn) {
+    useMyDataBtn.addEventListener('click', () => {
+      const profilo = JSON.parse(useMyDataBtn.getAttribute('data-profilo')!);
+      const setVal = (id: string, val: string) => {
+        const el = document.getElementById(id) as HTMLInputElement;
+        if (el && val) el.value = val;
+      };
+      setVal('new-member-form-nome', profilo.nome);
+      setVal('new-member-form-cognome', profilo.cognome);
+      setVal('new-member-form-email', profilo.email);
+      setVal('new-member-form-telefono', profilo.telefono);
+      useMyDataBtn.hidden = true;
+    });
+  }
 
   newForm.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -195,17 +330,51 @@ const isFounder = members?.some((m: any) => m.tipo_socio === 'fondatore' && m.em
       return;
     }
 
-    // Ricarica la pagina per mostrare il nuovo membro
     window.location.reload();
   });
 
   // === Modifica socio ===
   document.querySelectorAll('[data-edit]').forEach((btn) => {
     btn.addEventListener('click', () => {
-      const memberId = (btn as HTMLElement).getAttribute('data-edit');
-      // Per semplicita', ricarica la pagina con un parametro di modifica
-      // In futuro si puo' implementare editing inline
       alert('Funzionalita\' di modifica in arrivo. Per ora contatta un fondatore per modifiche.');
+    });
+  });
+
+  // === Aggiungi partecipante a prenotazione ===
+  document.querySelectorAll('[data-toggle-add]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const prenId = (btn as HTMLElement).getAttribute('data-toggle-add')!;
+      const form = document.querySelector(`[data-add-form="${prenId}"]`) as HTMLElement;
+      if (form) {
+        form.hidden = !form.hidden;
+        (btn as HTMLElement).hidden = !form.hidden;
+      }
+    });
+  });
+
+  document.querySelectorAll('[data-confirm-add]').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      const prenId = (btn as HTMLElement).getAttribute('data-confirm-add')!;
+      const select = document.querySelector(`[data-add-select="${prenId}"]`) as HTMLSelectElement;
+      const socioId = select?.value;
+
+      if (!socioId) return;
+
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { error } = await supabase.from('prenotazioni_soci').insert([{
+        prenotazione_id: prenId,
+        socio_id: socioId,
+        aggiunto_da: user.id,
+      }]);
+
+      if (error) {
+        alert('Errore: ' + error.message);
+        return;
+      }
+
+      window.location.reload();
     });
   });
 </script>
@@ -222,6 +391,16 @@ const isFounder = members?.some((m: any) => m.tipo_socio === 'fondatore' && m.em
     margin-bottom: 2rem;
     flex-wrap: wrap;
     gap: 1rem;
+  }
+
+  .dashboard__header-actions {
+    display: flex;
+    gap: 0.8rem;
+    flex-wrap: wrap;
+  }
+
+  .dashboard__section {
+    margin-bottom: 2rem;
   }
 
   .dashboard__empty {
@@ -245,6 +424,36 @@ const isFounder = members?.some((m: any) => m.tipo_socio === 'fondatore' && m.em
   .dashboard__subtitle {
     font-size: 1.3rem;
     margin-bottom: 1.5rem;
+  }
+
+  .dashboard__use-data-btn {
+    padding: 0.5rem 1.2rem;
+    font-size: 0.75rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .dashboard__prenotazioni {
+    margin-top: 1rem;
+    padding-top: 2rem;
+    border-top: 2px solid var(--color-border);
+  }
+
+  .dashboard__pren-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .dashboard__pren-header .dashboard__subtitle {
+    margin-bottom: 0;
+  }
+
+  .dashboard__pren-btn {
+    padding: 0.5rem 1.2rem;
+    font-size: 0.75rem;
   }
 
   .alert--error {

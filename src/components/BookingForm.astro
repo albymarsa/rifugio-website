@@ -1,15 +1,21 @@
-<!-- L'URL dello script Google va inserito qui sotto -->
-<!-- Segui le istruzioni nel README per ottenere l'URL -->
+---
+interface Props {
+  profilo: {
+    nome: string;
+    cognome: string;
+    email: string;
+    telefono?: string;
+  };
+}
+
+const { profilo } = Astro.props;
+---
+
 <form id="booking-form" class="booking-form" novalidate>
-  <div class="form-row">
-    <div class="form-group">
-      <label for="nome">Nome e Cognome *</label>
-      <input type="text" id="nome" name="nome" required />
-    </div>
-    <div class="form-group">
-      <label for="email">Email *</label>
-      <input type="email" id="email" name="email" required />
-    </div>
+  <div class="booking-form__requester">
+    <span class="booking-form__label">Prenotazione a nome di</span>
+    <span class="booking-form__name">{profilo.nome} {profilo.cognome}</span>
+    <span class="booking-form__email">{profilo.email}{profilo.telefono ? ` — ${profilo.telefono}` : ''}</span>
   </div>
 
   <div class="form-row">
@@ -23,15 +29,9 @@
     </div>
   </div>
 
-  <div class="form-row">
-    <div class="form-group">
-      <label for="persone">Numero persone *</label>
-      <input type="number" id="persone" name="persone" min="1" max="25" required />
-    </div>
-    <div class="form-group">
-      <label for="telefono">Telefono</label>
-      <input type="tel" id="telefono" name="telefono" />
-    </div>
+  <div class="form-group">
+    <label for="persone">Numero persone *</label>
+    <input type="number" id="persone" name="persone" min="1" max="25" required />
   </div>
 
   <div class="form-group">
@@ -57,8 +57,6 @@
 </form>
 
 <script>
-  const GOOGLE_SCRIPT_URL = ''; // <-- Inserire qui l'URL del Google Apps Script
-
   const form = document.getElementById('booking-form') as HTMLFormElement;
   const successMsg = document.getElementById('form-success')!;
   const errorMsg = document.getElementById('form-error')!;
@@ -66,7 +64,6 @@
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
 
-    // Validazione base
     if (!form.checkValidity()) {
       form.reportValidity();
       return;
@@ -77,34 +74,27 @@
     submitBtn.textContent = 'Invio in corso...';
     submitBtn.disabled = true;
 
-    // Nascondi messaggi precedenti
     successMsg.hidden = true;
     errorMsg.hidden = true;
 
-    // Raccogli dati
     const formData = new FormData(form);
-    const data = Object.fromEntries(formData.entries());
-
-    if (!GOOGLE_SCRIPT_URL) {
-      // Se l'URL non è configurato, mostra comunque il successo (per demo)
-      console.warn('Google Apps Script URL non configurato. Dati form:', data);
-      successMsg.hidden = false;
-      form.reset();
-      submitBtn.textContent = originalText;
-      submitBtn.disabled = false;
-      return;
-    }
 
     try {
-      await fetch(GOOGLE_SCRIPT_URL, {
+      const res = await fetch('/api/prenotazioni', {
         method: 'POST',
-        mode: 'no-cors',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
+        body: JSON.stringify({
+          data_arrivo: formData.get('data_arrivo'),
+          data_partenza: formData.get('data_partenza'),
+          num_persone: formData.get('persone'),
+          note: formData.get('note') || null,
+        }),
       });
 
-      // Con mode: 'no-cors' non possiamo leggere la risposta,
-      // ma se non c'è errore di rete, consideriamo l'invio riuscito
+      if (!res.ok) {
+        throw new Error('Errore server');
+      }
+
       successMsg.hidden = false;
       form.reset();
     } catch {
@@ -119,6 +109,35 @@
 <style>
   .booking-form {
     max-width: 680px;
+  }
+
+  .booking-form__requester {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    padding: 1.5rem;
+    background: var(--color-off-white);
+    margin-bottom: 2rem;
+    border-left: 3px solid var(--color-accent);
+  }
+
+  .booking-form__label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--color-gray);
+  }
+
+  .booking-form__name {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--color-black);
+  }
+
+  .booking-form__email {
+    font-size: 0.9rem;
+    color: var(--color-gray);
   }
 
   .booking-form__submit {
