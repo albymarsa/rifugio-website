@@ -143,6 +143,19 @@ const statoLabels: Record<string, string> = {
       </button>
     </div>
   )}
+
+  {showAdmin && partecipanti.length > 0 && (
+    <div class="pren-card__export">
+      <button
+        class="btn btn-outline pren-card__export-btn"
+        data-export-partecipanti={prenotazione.id}
+        data-export-arrivo={prenotazione.data_arrivo}
+        data-export-partenza={prenotazione.data_partenza}
+      >
+        Esporta partecipanti
+      </button>
+    </div>
+  )}
 </div>
 
 <style>
@@ -319,6 +332,16 @@ const statoLabels: Record<string, string> = {
   .pren-card__action-btn--cancel:hover {
     background: #9b1c1c;
     color: var(--color-white);
+  }
+
+  .pren-card__export {
+    margin-top: 1rem;
+    padding-top: 0.8rem;
+  }
+
+  .pren-card__export-btn {
+    padding: 0.4rem 1rem;
+    font-size: 0.7rem;
   }
 
   @media (max-width: 768px) {

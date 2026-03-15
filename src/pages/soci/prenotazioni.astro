@@ -31,10 +31,10 @@ const { data: prenotazioni, error: prenError } = await supabase
   .select('*')
   .order('created_at', { ascending: false });
 
-// Carica tutti i soci (per associazione)
+// Carica tutti i soci (per associazione e export)
 const { data: allSoci } = await supabase
   .from('soci')
-  .select('id, nome, cognome')
+  .select('id, nome, cognome, email, telefono')
   .order('cognome');
 
 // Carica tutte le associazioni
@@ -143,6 +143,9 @@ const annullate = (prenotazioni || []).filter((p: any) => p.stato === 'annullata
         ))
       )}
     </div>
+
+    <script id="partecipanti-data" type="application/json" set:html={JSON.stringify(partecipantiMap)} />
+    <script id="soci-data" type="application/json" set:html={JSON.stringify(allSoci)} />
   </div>
 </SociLayout>
 
@@ -275,6 +278,54 @@ const annullate = (prenotazioni || []).filter((p: any) => p.stato === 'annullata
         return;
       }
       window.location.reload();
+    });
+  });
+
+  // === Export partecipanti Excel ===
+  import * as XLSX from 'xlsx';
+
+  const partecipantiData = JSON.parse(document.getElementById('partecipanti-data')?.textContent || '{}');
+  const sociData = JSON.parse(document.getElementById('soci-data')?.textContent || '[]');
+
+  // Crea mappa soci per ID
+  const sociMap: Record<string, any> = {};
+  for (const s of sociData) {
+    sociMap[s.id] = s;
+  }
+
+  document.querySelectorAll('[data-export-partecipanti]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const prenId = (btn as HTMLElement).getAttribute('data-export-partecipanti')!;
+      const arrivo = (btn as HTMLElement).getAttribute('data-export-arrivo')!;
+      const partenza = (btn as HTMLElement).getAttribute('data-export-partenza')!;
+
+      const partecipanti = partecipantiData[prenId] || [];
+
+      if (partecipanti.length === 0) {
+        alert('Nessun partecipante da esportare.');
+        return;
+      }
+
+      const rows = partecipanti.map((p: any) => {
+        const full = sociMap[p.id] || p;
+        return {
+          'Cognome': full.cognome || '',
+          'Nome': full.nome || '',
+          'Email': full.email || '',
+          'Telefono': full.telefono || '',
+        };
+      });
+
+      const ws = XLSX.utils.json_to_sheet(rows);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Partecipanti');
+
+      const colWidths = Object.keys(rows[0]).map((key) => ({
+        wch: Math.max(key.length, ...rows.map((r: any) => String(r[key]).length)) + 2,
+      }));
+      ws['!cols'] = colWidths;
+
+      XLSX.writeFile(wb, `prenotazione_${arrivo}_${partenza}.xlsx`);
     });
   });
 </script>
