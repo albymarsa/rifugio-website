@@ -3,6 +3,7 @@ export const prerender = false;
 
 import Layout from '../layouts/Layout.astro';
 import BookingForm from '../components/BookingForm.astro';
+import CalendarioDisponibilita from '../components/CalendarioDisponibilita.astro';
 import { createClient } from '@supabase/supabase-js';
 
 const user = Astro.locals.user;
@@ -45,7 +46,10 @@ if (user) {
   <section class="section">
     <div class="container">
       {profilo ? (
-        <BookingForm profilo={profilo} />
+        <>
+          <CalendarioDisponibilita />
+          <BookingForm profilo={profilo} />
+        </>
       ) : (
         <div class="booking-no-profile">
           <p>Per richiedere una prenotazione devi prima completare il tuo profilo.</p>
