@@ -56,6 +56,11 @@ export const GET: APIRoute = async ({ url, cookies }) => {
       return jsonError('Errore nel caricamento dei dati', 500);
     }
 
+    console.log('[API disponibilita] Bookings trovate:', bookings?.length, 'per', monthStart, '-', nextMonth);
+    if (bookings && bookings.length > 0) {
+      console.log('[API disponibilita] Prima booking:', JSON.stringify(bookings[0]));
+    }
+
     // Aggrega occupazione per giorno
     const occupazione: Record<string, number> = {};
 
