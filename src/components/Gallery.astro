@@ -4,29 +4,34 @@
     <h2 class="section-title">Scorci dal rifugio</h2>
     <div class="gallery__grid">
       <div class="gallery__item gallery__item--large">
-        <div class="gallery__placeholder">
-          <span>Foto panorama</span>
-        </div>
+        <img src="/images/piana.jpg" alt="Alpe Veglia" loading="lazy" />
       </div>
       <div class="gallery__item">
-        <div class="gallery__placeholder">
-          <span>Foto interno</span>
-        </div>
+        <img src="/images/AV_220226_fotoLele_55.jpg" alt="Alpe Veglia" loading="lazy" />
       </div>
       <div class="gallery__item">
-        <div class="gallery__placeholder">
-          <span>Foto sentiero</span>
-        </div>
+        <img src="/images/AlpeVeglia_220226_29.jpg" alt="Alpe Veglia" loading="lazy" />
       </div>
       <div class="gallery__item">
-        <div class="gallery__placeholder">
-          <span>Foto tramonto</span>
-        </div>
+        <img src="/images/Veglia_Lele_19lug24_7.JPG" alt="Alpe Veglia" loading="lazy" />
       </div>
       <div class="gallery__item">
-        <div class="gallery__placeholder">
-          <span>Foto esterno</span>
-        </div>
+        <img src="/images/veglia_lele_ago18_21.JPG" alt="Alpe Veglia" loading="lazy" />
+      </div>
+      <div class="gallery__item">
+        <img src="/images/veglia_varie_19.jpg" alt="Alpe Veglia" loading="lazy" />
+      </div>
+      <div class="gallery__item">
+        <img src="/images/P1010252.JPG" alt="Rifugio" loading="lazy" />
+      </div>
+      <div class="gallery__item">
+        <img src="/images/P1010253.JPG" alt="Rifugio" loading="lazy" />
+      </div>
+      <div class="gallery__item">
+        <img src="/images/Alpe%20Veglia_23ott21_6.jpg" alt="Alpe Veglia" loading="lazy" />
+      </div>
+      <div class="gallery__item">
+        <img src="/images/alpeveglia_08_2011%201111.jpg" alt="Alpe Veglia" loading="lazy" />
       </div>
     </div>
   </div>
@@ -36,7 +41,7 @@
   .gallery__grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    grid-template-rows: auto auto;
+    grid-auto-rows: 220px;
     gap: 0.8rem;
     margin-top: 2rem;
   }
@@ -46,54 +51,27 @@
     grid-row: span 2;
   }
 
-  .gallery__placeholder {
-    width: 100%;
-    height: 100%;
-    min-height: 220px;
-    background-color: var(--color-dark);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-  }
-
-  .gallery__item--large .gallery__placeholder {
-    min-height: 460px;
-  }
-
-  .gallery__placeholder span {
-    color: var(--color-gray);
-    font-size: 0.85rem;
-    font-weight: 600;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-  }
-
-  /* Quando ci saranno le foto vere */
-  .gallery__placeholder img {
+  .gallery__item img {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    display: block;
     transition: transform 0.4s ease;
   }
 
-  .gallery__item:hover .gallery__placeholder img {
+  .gallery__item:hover img {
     transform: scale(1.03);
   }
 
   @media (max-width: 768px) {
     .gallery__grid {
       grid-template-columns: 1fr 1fr;
+      grid-auto-rows: 160px;
     }
 
     .gallery__item--large {
       grid-column: span 2;
       grid-row: span 1;
-    }
-
-    .gallery__placeholder,
-    .gallery__item--large .gallery__placeholder {
-      min-height: 180px;
     }
   }
 </style>
