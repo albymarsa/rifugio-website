@@ -29,9 +29,8 @@ const { profilo } = Astro.props;
     </div>
   </div>
 
-  <div class="form-group">
-    <label for="persone">Numero persone *</label>
-    <input type="number" id="persone" name="persone" min="1" max="25" required />
+  <div class="booking-form__info">
+    <p>La prenotazione è sempre per l'intera struttura (25 posti letto).</p>
   </div>
 
   <div class="form-group">
@@ -86,7 +85,6 @@ const { profilo } = Astro.props;
         body: JSON.stringify({
           data_arrivo: formData.get('data_arrivo'),
           data_partenza: formData.get('data_partenza'),
-          num_persone: formData.get('persone'),
           note: formData.get('note') || null,
         }),
       });
@@ -150,6 +148,20 @@ const { profilo } = Astro.props;
   .booking-form__submit:disabled {
     opacity: 0.6;
     cursor: not-allowed;
+  }
+
+  .booking-form__info {
+    padding: 1rem 1.5rem;
+    background: #f0f7ec;
+    border-left: 3px solid var(--color-accent);
+    margin-bottom: 1.5rem;
+  }
+
+  .booking-form__info p {
+    font-size: 0.95rem;
+    color: var(--color-black);
+    margin: 0;
+    max-width: none;
   }
 
   .form-note {

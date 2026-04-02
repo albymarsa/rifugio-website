@@ -60,20 +60,11 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     }
 
     const body = await request.json();
-    const { data_arrivo, data_partenza, num_persone, note } = body;
+    const { data_arrivo, data_partenza, note } = body;
 
     // Validazione campi obbligatori
-    if (!data_arrivo || !data_partenza || !num_persone) {
+    if (!data_arrivo || !data_partenza) {
       return new Response(JSON.stringify({ error: 'Campi obbligatori mancanti' }), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json' },
-      });
-    }
-
-    // Validazione num_persone
-    const numPersone = parseInt(num_persone, 10);
-    if (isNaN(numPersone) || numPersone < 1 || numPersone > 25) {
-      return new Response(JSON.stringify({ error: 'Numero persone non valido (1-25)' }), {
         status: 400,
         headers: { 'Content-Type': 'application/json' },
       });
@@ -97,10 +88,26 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       });
     }
 
+    // Controllo sovrapposizioni: la struttura è prenotabile solo nella sua interezza
+    const { data: overlapping } = await supabase
+      .from('prenotazioni')
+      .select('id')
+      .in('stato', ['confermata', 'da_confermare'])
+      .lt('data_arrivo', data_partenza)
+      .gt('data_partenza', data_arrivo)
+      .limit(1);
+
+    if (overlapping && overlapping.length > 0) {
+      return new Response(JSON.stringify({ error: 'Le date selezionate non sono disponibili. La struttura è già prenotata in quel periodo.' }), {
+        status: 409,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
     const { error } = await supabase.from('prenotazioni').insert([{
       data_arrivo,
       data_partenza,
-      num_persone: numPersone,
+      num_persone: 25,
       note: note || null,
       richiedente_nome: `${profilo.nome} ${profilo.cognome}`,
       richiedente_email: profilo.email,

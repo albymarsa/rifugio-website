@@ -11,13 +11,10 @@
 
   <div class="calendario__legend">
     <span class="calendario__legend-item">
-      <span class="calendario__dot calendario__dot--green"></span> Disponibile
+      <span class="calendario__dot calendario__dot--green"></span> Libero
     </span>
     <span class="calendario__legend-item">
-      <span class="calendario__dot calendario__dot--yellow"></span> Quasi pieno
-    </span>
-    <span class="calendario__legend-item">
-      <span class="calendario__dot calendario__dot--red"></span> Pieno
+      <span class="calendario__dot calendario__dot--red"></span> Occupato
     </span>
     <span class="calendario__legend-item">
       <span class="calendario__dot calendario__dot--gray"></span> Passato
@@ -89,7 +86,6 @@
     for (let day = 1; day <= daysInMonth; day++) {
       const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
       const occupied = occupazione[dateStr] || 0;
-      const free = Math.max(0, capacita - occupied);
       const isPast = dateStr < todayStr;
 
       const cell = document.createElement('div');
@@ -97,10 +93,8 @@
 
       if (isPast) {
         cell.classList.add('calendario__day--past');
-      } else if (free === 0) {
+      } else if (occupied > 0) {
         cell.classList.add('calendario__day--red');
-      } else if (free <= 12) {
-        cell.classList.add('calendario__day--yellow');
       } else {
         cell.classList.add('calendario__day--green');
       }
@@ -113,11 +107,11 @@
       if (!isPast) {
         const info = document.createElement('span');
         info.className = 'calendario__day-info';
-        info.textContent = free === 0 ? 'Pieno' : `${free} liberi`;
+        info.textContent = occupied > 0 ? 'Occupato' : 'Libero';
         cell.appendChild(info);
 
         // Click per auto-compilare data arrivo
-        if (free > 0) {
+        if (occupied === 0) {
           cell.style.cursor = 'pointer';
           cell.addEventListener('click', () => {
             const arrivoInput = document.getElementById('data_arrivo') as HTMLInputElement;
@@ -224,11 +218,6 @@
     border: 1px solid #2d5016;
   }
 
-  .calendario__dot--yellow {
-    background: #fff8e1;
-    border: 1px solid #b8860b;
-  }
-
   .calendario__dot--red {
     background: #fde8e8;
     border: 1px solid #9b1c1c;
@@ -286,11 +275,6 @@
   .calendario__day--green {
     background: #e8f5e0;
     border: 1px solid #c5e1b5;
-  }
-
-  .calendario__day--yellow {
-    background: #fff8e1;
-    border: 1px solid #f0d98c;
   }
 
   .calendario__day--red {
