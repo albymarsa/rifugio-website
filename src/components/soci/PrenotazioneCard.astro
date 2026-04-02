@@ -144,6 +144,14 @@ const statoLabels: Record<string, string> = {
     </div>
   )}
 
+  {showAdmin && prenotazione.stato === 'annullata' && (
+    <div class="pren-card__admin-actions">
+      <button class="btn btn-outline pren-card__action-btn pren-card__action-btn--delete" data-elimina-prenotazione={prenotazione.id}>
+        Elimina definitivamente
+      </button>
+    </div>
+  )}
+
   {showAdmin && partecipanti.length > 0 && (
     <div class="pren-card__export">
       <button
@@ -331,6 +339,16 @@ const statoLabels: Record<string, string> = {
 
   .pren-card__action-btn--cancel:hover {
     background: #9b1c1c;
+    color: var(--color-white);
+  }
+
+  .pren-card__action-btn--delete {
+    border-color: #7f1d1d;
+    color: #7f1d1d;
+  }
+
+  .pren-card__action-btn--delete:hover {
+    background: #7f1d1d;
     color: var(--color-white);
   }
 

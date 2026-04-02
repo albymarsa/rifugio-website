@@ -235,6 +235,20 @@ const annullate = (prenotazioni || []).filter((p: any) => p.stato === 'annullata
     });
   });
 
+  // === Elimina prenotazione ===
+  document.querySelectorAll('[data-elimina-prenotazione]').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      if (!confirm('Sei sicuro di voler eliminare definitivamente questa prenotazione? Questa azione è irreversibile.')) return;
+      const prenId = (btn as HTMLElement).getAttribute('data-elimina-prenotazione')!;
+      try {
+        await apiCall('/api/prenotazioni-stato', 'DELETE', { prenotazione_id: prenId });
+        window.location.reload();
+      } catch (e: any) {
+        alert('Errore: ' + e.message);
+      }
+    });
+  });
+
   // === Rimuovi partecipante ===
   document.querySelectorAll('[data-remove-socio]').forEach((btn) => {
     btn.addEventListener('click', async () => {
