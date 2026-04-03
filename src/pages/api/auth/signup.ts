@@ -28,6 +28,16 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       });
     }
 
+    // Supabase restituisce user con identities vuote se l'email e' gia' registrata
+    if (data.user && data.user.identities && data.user.identities.length === 0) {
+      return new Response(JSON.stringify({
+        error: 'Questo indirizzo email è già registrato. Prova ad accedere.',
+      }), {
+        status: 409,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
     if (data.session) {
       cookies.set('sb-access-token', data.session.access_token, {
         path: '/',

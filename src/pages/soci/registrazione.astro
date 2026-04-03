@@ -119,7 +119,7 @@ if (accessToken) {
         if (emailInput) emailInput.value = email;
       } else if (result.needsEmailConfirm) {
         // Se la conferma email e' attiva
-        authSuccess.textContent = 'Account creato! Controlla la tua email per confermare, poi accedi.';
+        authSuccess.innerHTML = 'Account creato! Controlla la tua casella email (anche la cartella spam) per confermare l\'account, poi <a href="/soci/login">accedi</a>.';
         authSuccess.hidden = false;
         submitBtn.textContent = 'Crea account';
         submitBtn.disabled = false;

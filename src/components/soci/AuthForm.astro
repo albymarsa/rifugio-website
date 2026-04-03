@@ -26,6 +26,11 @@ const isLogin = mode === 'login';
     {!isLogin && (
       <span class="form-hint">Minimo 6 caratteri</span>
     )}
+    {isLogin && (
+      <a href="/soci/password-dimenticata" class="auth-form__forgot-link">
+        Password dimenticata?
+      </a>
+    )}
   </div>
 
   {!isLogin && (
@@ -101,6 +106,18 @@ const isLogin = mode === 'login';
     color: var(--color-black);
     font-weight: 600;
     text-decoration: underline;
+  }
+
+  .auth-form__forgot-link {
+    display: block;
+    margin-top: 0.4rem;
+    font-size: 0.85rem;
+    color: var(--color-gray);
+    text-decoration: underline;
+  }
+
+  .auth-form__forgot-link:hover {
+    color: var(--color-black);
   }
 
   .form-hint {

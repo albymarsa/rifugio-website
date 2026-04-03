@@ -11,9 +11,11 @@ export const onRequest = defineMiddleware(async (context, next) => {
     return next();
   }
 
-  // Login e registrazione sono accessibili a tutti
+  // Login, registrazione e reset password sono accessibili a tutti
   if (pathname === '/soci/login' || pathname === '/soci/login/' ||
-      pathname === '/soci/registrazione' || pathname === '/soci/registrazione/') {
+      pathname === '/soci/registrazione' || pathname === '/soci/registrazione/' ||
+      pathname === '/soci/password-dimenticata' || pathname === '/soci/password-dimenticata/' ||
+      pathname === '/soci/reset-password' || pathname === '/soci/reset-password/') {
     return next();
   }
 
