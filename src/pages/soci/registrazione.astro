@@ -47,6 +47,7 @@ if (accessToken && completaProfilo && refreshToken) {
 
     <!-- Step 2: Completa profilo -->
     <div id="step-profile" class="register-step" hidden={!completaProfilo}
+      data-user-email={userEmail || ''}>
       <h2 class="register-step__title">2. Completa il tuo profilo</h2>
       <p class="register-step__desc">
         Inserisci i tuoi dati di base. Questi verranno usati per le tue richieste di prenotazione.
@@ -82,24 +83,26 @@ if (accessToken && completaProfilo && refreshToken) {
   </div>
 </SociLayout>
 
-<script define:vars={{ userEmail, completaProfilo }}>
-  let currentUserEmail = userEmail;
+<script>
+  const stepProfile = document.getElementById('step-profile');
+  const prefilledEmail = stepProfile?.getAttribute('data-user-email') || '';
+  let currentUserEmail: string | null = prefilledEmail || null;
 
   // Se siamo in modalità completamento profilo, pre-compila l'email
-  if (completaProfilo && userEmail) {
-    const emailInput = document.getElementById('profile-email');
-    if (emailInput) emailInput.value = userEmail;
+  if (prefilledEmail) {
+    const emailInput = document.getElementById('profile-email') as HTMLInputElement;
+    if (emailInput) emailInput.value = prefilledEmail;
   }
 
   // === STEP 1: Registrazione account ===
-  const authForm = document.getElementById('auth-form');
+  const authForm = document.getElementById('auth-form') as HTMLFormElement | null;
   const authError = document.getElementById('auth-error');
   const authSuccess = document.getElementById('auth-success');
 
   if (authForm) authForm.addEventListener('submit', async (e) => {
     e.preventDefault();
-    authError.hidden = true;
-    authSuccess.hidden = true;
+    authError!.hidden = true;
+    authSuccess!.hidden = true;
 
     const formData = new FormData(authForm);
     const email = formData.get('email') as string;
@@ -107,8 +110,8 @@ if (accessToken && completaProfilo && refreshToken) {
     const passwordConfirm = formData.get('password_confirm') as string;
 
     if (password !== passwordConfirm) {
-      authError.textContent = 'Le password non coincidono.';
-      authError.hidden = false;
+      authError!.textContent = 'Le password non coincidono.';
+      authError!.hidden = false;
       return;
     }
 
@@ -126,8 +129,8 @@ if (accessToken && completaProfilo && refreshToken) {
       const result = await res.json();
 
       if (!res.ok) {
-        authError.textContent = result.error || 'Errore nella registrazione.';
-        authError.hidden = false;
+        authError!.textContent = result.error || 'Errore nella registrazione.';
+        authError!.hidden = false;
         submitBtn.textContent = 'Crea account';
         submitBtn.disabled = false;
         return;
@@ -137,29 +140,30 @@ if (accessToken && completaProfilo && refreshToken) {
         currentUserEmail = email;
 
         // Passa allo step 2
-        document.getElementById('step-account')!.hidden = true;
-        document.getElementById('step-profile')!.hidden = false;
+        const stepAccount = document.getElementById('step-account');
+        if (stepAccount) stepAccount.hidden = true;
+        if (stepProfile) stepProfile.hidden = false;
 
         // Pre-compila l'email
         const emailInput = document.getElementById('profile-email') as HTMLInputElement;
         if (emailInput) emailInput.value = email;
       } else if (result.needsEmailConfirm) {
         // Se la conferma email e' attiva
-        authSuccess.innerHTML = 'Account creato! Controlla la tua casella email (anche la cartella spam) per confermare l\'account, poi <a href="/soci/login">accedi</a>.';
-        authSuccess.hidden = false;
+        authSuccess!.innerHTML = 'Account creato! Controlla la tua casella email (anche la cartella spam) per confermare l\'account, poi <a href="/soci/login">accedi</a>.';
+        authSuccess!.hidden = false;
         submitBtn.textContent = 'Crea account';
         submitBtn.disabled = false;
       }
     } catch {
-      authError.textContent = 'Errore di connessione. Riprova.';
-      authError.hidden = false;
+      authError!.textContent = 'Errore di connessione. Riprova.';
+      authError!.hidden = false;
       submitBtn.textContent = 'Crea account';
       submitBtn.disabled = false;
     }
   });
 
   // === STEP 2: Profilo ===
-  const profileForm = document.getElementById('profile-form');
+  const profileForm = document.getElementById('profile-form') as HTMLFormElement;
 
   profileForm.addEventListener('submit', async (e) => {
     e.preventDefault();
