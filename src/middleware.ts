@@ -70,6 +70,19 @@ export const onRequest = defineMiddleware(async (context, next) => {
   // Rendi l'utente disponibile alle pagine
   context.locals.user = data.user;
 
+  // Verifica che l'utente abbia un profilo completo (escluse API e pagina prenota)
+  if (pathname.startsWith('/soci') && !pathname.startsWith('/soci/registrazione')) {
+    const { data: profilo } = await supabase
+      .from('profili')
+      .select('id')
+      .eq('id', data.user.id)
+      .single();
+
+    if (!profilo) {
+      return context.redirect('/soci/registrazione?completa=1');
+    }
+  }
+
   // Per le pagine admin, verifica che l'utente sia un fondatore
   if (pathname === '/soci/admin' || pathname === '/soci/admin/' ||
       pathname === '/soci/prenotazioni' || pathname === '/soci/prenotazioni/') {

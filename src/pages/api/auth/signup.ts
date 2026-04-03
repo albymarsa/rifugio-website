@@ -22,7 +22,10 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     const { data, error } = await supabase.auth.signUp({ email, password });
 
     if (error) {
-      return new Response(JSON.stringify({ error: 'Errore nella registrazione: ' + error.message }), {
+      const message = error.message === 'User already registered'
+        ? 'Questo indirizzo email è già registrato. Prova ad accedere.'
+        : 'Errore nella registrazione. Riprova.';
+      return new Response(JSON.stringify({ error: message }), {
         status: 400,
         headers: { 'Content-Type': 'application/json' },
       });

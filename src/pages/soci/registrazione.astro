@@ -4,10 +4,28 @@ export const prerender = false;
 import SociLayout from '../../layouts/SociLayout.astro';
 import AuthForm from '../../components/soci/AuthForm.astro';
 
-// Se l'utente e' gia' loggato, redirect alla dashboard
+import { createClient } from '@supabase/supabase-js';
+
+// Se l'utente e' gia' loggato, verifica se deve completare il profilo
 const accessToken = Astro.cookies.get('sb-access-token')?.value;
-if (accessToken) {
+const refreshToken = Astro.cookies.get('sb-refresh-token')?.value;
+const completaProfilo = Astro.url.searchParams.get('completa') === '1';
+let userEmail: string | null = null;
+
+if (accessToken && !completaProfilo) {
   return Astro.redirect('/soci/');
+}
+
+if (accessToken && completaProfilo && refreshToken) {
+  const supabase = createClient(
+    import.meta.env.PUBLIC_SUPABASE_URL,
+    import.meta.env.PUBLIC_SUPABASE_ANON_KEY
+  );
+  const { data } = await supabase.auth.setSession({
+    access_token: accessToken,
+    refresh_token: refreshToken,
+  });
+  userEmail = data.user?.email ?? null;
 }
 ---
 
@@ -20,13 +38,15 @@ if (accessToken) {
     </p>
 
     <!-- Step 1: Crea account -->
-    <div id="step-account" class="register-step">
-      <h2 class="register-step__title">1. Crea il tuo account</h2>
-      <AuthForm mode="register" />
-    </div>
+    {!completaProfilo && (
+      <div id="step-account" class="register-step">
+        <h2 class="register-step__title">1. Crea il tuo account</h2>
+        <AuthForm mode="register" />
+      </div>
+    )}
 
     <!-- Step 2: Completa profilo -->
-    <div id="step-profile" class="register-step" hidden>
+    <div id="step-profile" class="register-step" hidden={!completaProfilo}
       <h2 class="register-step__title">2. Completa il tuo profilo</h2>
       <p class="register-step__desc">
         Inserisci i tuoi dati di base. Questi verranno usati per le tue richieste di prenotazione.
@@ -62,15 +82,21 @@ if (accessToken) {
   </div>
 </SociLayout>
 
-<script>
-  let currentUserEmail: string | null = null;
+<script define:vars={{ userEmail, completaProfilo }}>
+  let currentUserEmail = userEmail;
+
+  // Se siamo in modalità completamento profilo, pre-compila l'email
+  if (completaProfilo && userEmail) {
+    const emailInput = document.getElementById('profile-email');
+    if (emailInput) emailInput.value = userEmail;
+  }
 
   // === STEP 1: Registrazione account ===
-  const authForm = document.getElementById('auth-form') as HTMLFormElement;
-  const authError = document.getElementById('auth-error')!;
-  const authSuccess = document.getElementById('auth-success')!;
+  const authForm = document.getElementById('auth-form');
+  const authError = document.getElementById('auth-error');
+  const authSuccess = document.getElementById('auth-success');
 
-  authForm.addEventListener('submit', async (e) => {
+  if (authForm) authForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     authError.hidden = true;
     authSuccess.hidden = true;
@@ -133,7 +159,7 @@ if (accessToken) {
   });
 
   // === STEP 2: Profilo ===
-  const profileForm = document.getElementById('profile-form') as HTMLFormElement;
+  const profileForm = document.getElementById('profile-form');
 
   profileForm.addEventListener('submit', async (e) => {
     e.preventDefault();
