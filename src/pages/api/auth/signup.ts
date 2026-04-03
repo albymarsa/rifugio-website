@@ -5,10 +5,10 @@ import { createClient } from '@supabase/supabase-js';
 
 export const POST: APIRoute = async ({ request, cookies }) => {
   try {
-    const { email, password } = await request.json();
+    const { email, password, nome, cognome, telefono } = await request.json();
 
-    if (!email || !password) {
-      return new Response(JSON.stringify({ error: 'Email e password sono obbligatori' }), {
+    if (!email || !password || !nome || !cognome) {
+      return new Response(JSON.stringify({ error: 'Email, password, nome e cognome sono obbligatori' }), {
         status: 400,
         headers: { 'Content-Type': 'application/json' },
       });
@@ -42,6 +42,21 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     }
 
     if (data.session) {
+      // Crea il profilo
+      const { error: profileError } = await supabase.from('profili').insert([{
+        id: data.user!.id,
+        nome,
+        cognome,
+        email,
+        telefono: telefono || null,
+      }]);
+
+      if (profileError) {
+        console.error('[API signup] Errore creazione profilo:', profileError.message);
+        // L'account è stato creato ma il profilo no — non blocchiamo,
+        // il middleware reindirizzerà a completare il profilo
+      }
+
       cookies.set('sb-access-token', data.session.access_token, {
         path: '/',
         maxAge: 3600,
@@ -57,12 +72,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
         httpOnly: true,
       });
 
-      return new Response(JSON.stringify({
-        success: true,
-        needsProfile: true,
-        userId: data.user?.id,
-        email,
-      }), {
+      return new Response(JSON.stringify({ success: true }), {
         status: 200,
         headers: { 'Content-Type': 'application/json' },
       });
@@ -71,7 +81,6 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     // Se la conferma email e' attiva, non c'e' sessione
     return new Response(JSON.stringify({
       success: true,
-      needsProfile: false,
       needsEmailConfirm: true,
     }), {
       status: 200,
