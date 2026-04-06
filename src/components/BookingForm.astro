@@ -38,6 +38,15 @@ const { profilo } = Astro.props;
     <textarea id="note" name="note" placeholder="Esigenze particolari, orario arrivo previsto, ecc."></textarea>
   </div>
 
+  <div class="form-group form-group--checkbox">
+    <label class="checkbox-label">
+      <input type="checkbox" name="privacy_consent" required />
+      <span>
+        Ho letto l'<a href="/privacy" target="_blank">informativa sulla privacy</a> e acconsento al trattamento dei dati personali per la gestione della prenotazione. *
+      </span>
+    </label>
+  </div>
+
   <div class="form-note">
     <p>* Campi obbligatori. La prenotazione non è confermata fino a quando non riceverai una nostra email di conferma (entro 48 ore).</p>
   </div>
@@ -50,9 +59,7 @@ const { profilo } = Astro.props;
   <div id="form-success" class="form-message form-message--success" hidden>
     Richiesta inviata! Ti risponderemo entro 48 ore all'indirizzo email indicato.
   </div>
-  <div id="form-error" class="form-message form-message--error" hidden>
-    Si è verificato un errore. Riprova o contattaci direttamente via email.
-  </div>
+  <div id="form-error" class="form-message form-message--error" hidden></div>
 </form>
 
 <script>
@@ -89,13 +96,18 @@ const { profilo } = Astro.props;
         }),
       });
 
+      const result = await res.json().catch(() => ({}));
+
       if (!res.ok) {
-        throw new Error('Errore server');
+        errorMsg.textContent = result.error || 'Si è verificato un errore. Riprova o contattaci direttamente via email.';
+        errorMsg.hidden = false;
+        return;
       }
 
       successMsg.hidden = false;
       form.reset();
     } catch {
+      errorMsg.textContent = 'Errore di connessione. Riprova.';
       errorMsg.hidden = false;
     } finally {
       submitBtn.textContent = originalText;
@@ -191,5 +203,36 @@ const { profilo } = Astro.props;
     background-color: #fdf0f0;
     color: #9b1c1c;
     border-left: 3px solid #9b1c1c;
+  }
+
+  .form-group--checkbox {
+    margin-top: 0.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .checkbox-label {
+    display: flex;
+    gap: 0.6rem;
+    align-items: flex-start;
+    font-size: 0.85rem;
+    line-height: 1.5;
+    color: var(--color-dark);
+    cursor: pointer;
+    text-transform: none;
+    letter-spacing: normal;
+    font-weight: 400;
+  }
+
+  .checkbox-label input[type="checkbox"] {
+    margin-top: 0.25rem;
+    flex-shrink: 0;
+    width: 16px;
+    height: 16px;
+  }
+
+  .checkbox-label a {
+    color: var(--color-black);
+    font-weight: 600;
+    text-decoration: underline;
   }
 </style>
