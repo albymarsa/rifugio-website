@@ -5,10 +5,24 @@ import { createClient } from '@supabase/supabase-js';
 
 export const POST: APIRoute = async ({ request, cookies }) => {
   try {
-    // Verifica Origin (CSRF protection)
+    // Verifica Origin (CSRF protection): l'origin deve corrispondere all'host della richiesta
     const origin = request.headers.get('origin');
-    const siteUrl = import.meta.env.SITE_URL || import.meta.env.PUBLIC_SUPABASE_URL;
-    if (!origin || (!origin.startsWith('http://localhost:') && siteUrl && !origin.startsWith(siteUrl))) {
+    const host = request.headers.get('host');
+    if (!origin || !host) {
+      return new Response(JSON.stringify({ error: 'Richiesta non autorizzata' }), {
+        status: 403,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+    try {
+      const originHost = new URL(origin).host;
+      if (originHost !== host) {
+        return new Response(JSON.stringify({ error: 'Richiesta non autorizzata' }), {
+          status: 403,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+    } catch {
       return new Response(JSON.stringify({ error: 'Richiesta non autorizzata' }), {
         status: 403,
         headers: { 'Content-Type': 'application/json' },
