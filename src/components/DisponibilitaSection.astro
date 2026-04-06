@@ -41,6 +41,10 @@ import CalendarioDisponibilita from './CalendarioDisponibilita.astro';
     justify-content: center;
   }
 
+  .disponibilita-section__calendar-wrap :global(.calendario) {
+    width: 100%;
+  }
+
   .disponibilita-section__info {
     max-width: 520px;
     margin: 0 auto;
@@ -59,8 +63,8 @@ import CalendarioDisponibilita from './CalendarioDisponibilita.astro';
 
   @media (min-width: 900px) {
     .disponibilita-section__grid {
-      grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
-      gap: 3.5rem;
+      grid-template-columns: minmax(520px, 620px) minmax(0, 1fr);
+      gap: 3rem;
     }
 
     .disponibilita-section__calendar-wrap {
