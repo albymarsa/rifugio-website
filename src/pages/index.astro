@@ -2,6 +2,7 @@
 import Layout from '../layouts/Layout.astro';
 import Hero from '../components/Hero.astro';
 import InfoSection from '../components/InfoSection.astro';
+import DisponibilitaSection from '../components/DisponibilitaSection.astro';
 import HowToArrive from '../components/HowToArrive.astro';
 import Rules from '../components/Rules.astro';
 import Gallery from '../components/Gallery.astro';
@@ -9,12 +10,9 @@ import ContactBanner from '../components/ContactBanner.astro';
 ---
 
 <Layout title="Rifugio Rosmini — Nel cuore delle montagne">
-  <Hero
-    title="Un rifugio alpino non gestito all'alpe Veglia"
-    subtitle="25 posti letto a 1750 metri. Un rifugio nel cuore delle Alpi, per chi ama la pace e la montagna."
-    cta={{ text: "Prenota il tuo posto", href: "/prenota" }}
-  />
+  <Hero />
   <InfoSection />
+  <DisponibilitaSection />
   <HowToArrive />
   <Gallery />
   <Rules />

@@ -2,16 +2,13 @@ export const prerender = false;
 
 import type { APIRoute } from 'astro';
 import { createClient } from '@supabase/supabase-js';
-import { getAuthenticatedClient, jsonError, jsonOk } from '../../lib/auth';
+import { jsonError, jsonOk } from '../../lib/auth';
 
 const CAPACITA = 25;
 
-/** GET: Restituisce l'occupazione aggregata per giorno di un dato mese */
-export const GET: APIRoute = async ({ url, cookies }) => {
+/** GET: Restituisce l'occupazione aggregata per giorno di un dato mese (endpoint pubblico) */
+export const GET: APIRoute = async ({ url }) => {
   try {
-    const auth = await getAuthenticatedClient(cookies);
-    if ('error' in auth) return jsonError(auth.error, auth.status);
-
     // Validazione parametri
     const annoStr = url.searchParams.get('anno');
     const meseStr = url.searchParams.get('mese');
@@ -54,11 +51,6 @@ export const GET: APIRoute = async ({ url, cookies }) => {
     if (error) {
       console.error('[API disponibilita] Errore query:', error.message);
       return jsonError('Errore nel caricamento dei dati', 500);
-    }
-
-    console.log('[API disponibilita] Bookings trovate:', bookings?.length, 'per', monthStart, '-', nextMonth);
-    if (bookings && bookings.length > 0) {
-      console.log('[API disponibilita] Prima booking:', JSON.stringify(bookings[0]));
     }
 
     // Aggrega occupazione per giorno

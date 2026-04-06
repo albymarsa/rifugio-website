@@ -1,0 +1,50 @@
+---
+import CalendarioDisponibilita from './CalendarioDisponibilita.astro';
+---
+
+<section class="disponibilita-section" id="disponibilita">
+  <div class="container">
+    <h2 class="section-title">Verifica disponibilità</h2>
+    <p class="disponibilita-section__subtitle">
+      Il rifugio si prenota per intero: 25 posti letto. Controlla quando è libero e, se ti interessa, procedi con la richiesta.
+    </p>
+
+    <div class="disponibilita-section__calendar-wrap">
+      <CalendarioDisponibilita />
+    </div>
+
+    <div class="disponibilita-section__cta">
+      <p>Vuoi prenotare? Serve un account socio.</p>
+      <a href="/soci/login" class="btn btn-primary">Accedi o registrati</a>
+    </div>
+  </div>
+</section>
+
+<style>
+  .disponibilita-section {
+    padding: 4rem 0;
+    background: var(--color-off-white);
+  }
+
+  .disponibilita-section__subtitle {
+    max-width: 680px;
+    margin: 0 auto 2rem;
+    text-align: center;
+    color: var(--color-gray);
+  }
+
+  .disponibilita-section__calendar-wrap {
+    display: flex;
+    justify-content: center;
+  }
+
+  .disponibilita-section__cta {
+    text-align: center;
+    margin-top: 1.5rem;
+  }
+
+  .disponibilita-section__cta p {
+    margin-bottom: 0.8rem;
+    color: var(--color-gray);
+  }
+</style>
