@@ -4,18 +4,21 @@ import CalendarioDisponibilita from './CalendarioDisponibilita.astro';
 
 <section class="disponibilita-section" id="disponibilita">
   <div class="container">
-    <h2 class="section-title">Verifica disponibilità</h2>
-    <p class="disponibilita-section__subtitle">
-      Il rifugio si prenota per intero: 25 posti letto. Controlla quando è libero e, se ti interessa, procedi con la richiesta.
-    </p>
+    <div class="disponibilita-section__grid">
+      <div class="disponibilita-section__calendar-wrap">
+        <CalendarioDisponibilita />
+      </div>
 
-    <div class="disponibilita-section__calendar-wrap">
-      <CalendarioDisponibilita />
-    </div>
-
-    <div class="disponibilita-section__cta">
-      <p>Vuoi prenotare? Serve un account socio.</p>
-      <a href="/soci/login" class="btn btn-primary">Accedi o registrati</a>
+      <div class="disponibilita-section__info">
+        <h2 class="section-title">Verifica disponibilità</h2>
+        <p class="disponibilita-section__text">
+          Il rifugio si prenota per intero: 25 posti letto. Controlla quando è libero e, se ti interessa, procedi con la richiesta. Per informazioni o richieste particolari scrivi a <a href="mailto:info@rifugiorosmini.it">info@rifugiorosmini.it</a>.
+        </p>
+        <div class="disponibilita-section__cta">
+          <p>Vuoi prenotare? Serve un account socio.</p>
+          <a href="/soci/login" class="btn btn-primary">Accedi o registrati</a>
+        </div>
+      </div>
     </div>
   </div>
 </section>
@@ -26,11 +29,11 @@ import CalendarioDisponibilita from './CalendarioDisponibilita.astro';
     background: var(--color-off-white);
   }
 
-  .disponibilita-section__subtitle {
-    max-width: 680px;
-    margin: 0 auto 2rem;
-    text-align: center;
-    color: var(--color-gray);
+  .disponibilita-section__grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    align-items: center;
   }
 
   .disponibilita-section__calendar-wrap {
@@ -38,13 +41,39 @@ import CalendarioDisponibilita from './CalendarioDisponibilita.astro';
     justify-content: center;
   }
 
-  .disponibilita-section__cta {
+  .disponibilita-section__info {
+    max-width: 520px;
+    margin: 0 auto;
     text-align: center;
-    margin-top: 1.5rem;
+  }
+
+  .disponibilita-section__text {
+    color: var(--color-gray);
+    margin-bottom: 1.5rem;
   }
 
   .disponibilita-section__cta p {
     margin-bottom: 0.8rem;
     color: var(--color-gray);
+  }
+
+  @media (min-width: 900px) {
+    .disponibilita-section__grid {
+      grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+      gap: 3.5rem;
+    }
+
+    .disponibilita-section__calendar-wrap {
+      justify-content: flex-end;
+    }
+
+    .disponibilita-section__info {
+      margin: 0;
+      text-align: left;
+    }
+
+    .disponibilita-section__info .section-title {
+      text-align: left;
+    }
   }
 </style>
