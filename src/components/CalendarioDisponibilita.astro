@@ -19,6 +19,9 @@
     <span class="calendario__legend-item">
       <span class="calendario__dot calendario__dot--gray"></span> Passato
     </span>
+    <span class="calendario__legend-item">
+      <span class="calendario__dot calendario__dot--closed"></span> Chiuso
+    </span>
   </div>
 
   <div class="calendario__weekdays">
@@ -87,12 +90,15 @@
       const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
       const occupied = occupazione[dateStr] || 0;
       const isPast = dateStr < todayStr;
+      const isClosed = month + 1 < 6 || month + 1 > 10;
 
       const cell = document.createElement('div');
       cell.className = 'calendario__day';
 
       if (isPast) {
         cell.classList.add('calendario__day--past');
+      } else if (isClosed) {
+        cell.classList.add('calendario__day--closed');
       } else if (occupied > 0) {
         cell.classList.add('calendario__day--red');
       } else {
@@ -104,7 +110,7 @@
       dayNum.textContent = String(day);
       cell.appendChild(dayNum);
 
-      if (!isPast) {
+      if (!isPast && !isClosed) {
         const info = document.createElement('span');
         info.className = 'calendario__day-info';
         info.textContent = occupied > 0 ? 'Occupato' : 'Libero';
@@ -122,6 +128,11 @@
             }
           });
         }
+      } else if (isClosed) {
+        const info = document.createElement('span');
+        info.className = 'calendario__day-info';
+        info.textContent = 'Chiuso';
+        cell.appendChild(info);
       }
 
       gridEl.appendChild(cell);
@@ -228,6 +239,11 @@
     border: 1px solid var(--color-border);
   }
 
+  .calendario__dot--closed {
+    background: #d9d9d9;
+    border: 1px solid #8a8a8a;
+  }
+
   .calendario__weekdays {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
@@ -280,6 +296,13 @@
   .calendario__day--red {
     background: #fde8e8;
     border: 1px solid #f0b8b8;
+  }
+
+  .calendario__day--closed {
+    background: #d9d9d9;
+    border: 1px solid #b0b0b0;
+    color: #5a5a5a;
+    cursor: default;
   }
 
   .calendario__day-num {

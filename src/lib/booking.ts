@@ -6,6 +6,15 @@
 
 export const CAPACITA = 25;
 
+/**
+ * Il rifugio è aperto solo da giugno a ottobre inclusi.
+ * Ritorna true per i giorni in cui la struttura è chiusa (novembre–maggio).
+ */
+export function isClosedDate(dateStr: string): boolean {
+  const month = Number(dateStr.slice(5, 7));
+  return month < 6 || month > 10;
+}
+
 export type ValidationResult = { ok: true } | { ok: false; error: string };
 
 /** Valida i campi data_arrivo / data_partenza / note di una richiesta di prenotazione. */
@@ -31,7 +40,23 @@ export function validateBookingDates(
   if (note != null && typeof note === 'string' && note.length > 2000) {
     return { ok: false, error: 'Note troppo lunghe (max 2000 caratteri)' };
   }
+  // Stagione: il rifugio è aperto solo giugno–ottobre. La data di partenza
+  // è esclusiva (check-out), quindi il vincolo è sull'ultima notte = partenza - 1 giorno.
+  const ultimaNotte = prevDay(data_partenza);
+  if (isClosedDate(data_arrivo) || isClosedDate(ultimaNotte)) {
+    return {
+      ok: false,
+      error: 'Il rifugio è chiuso da novembre a maggio. Seleziona date tra giugno e ottobre.',
+    };
+  }
   return { ok: true };
+}
+
+/** Decrementa una data YYYY-MM-DD di un giorno. */
+function prevDay(dateStr: string): string {
+  const [y, m, d] = dateStr.split('-').map(Number);
+  const prev = new Date(y, m - 1, d - 1);
+  return `${prev.getFullYear()}-${String(prev.getMonth() + 1).padStart(2, '0')}-${String(prev.getDate()).padStart(2, '0')}`;
 }
 
 export type ExistingBooking = {

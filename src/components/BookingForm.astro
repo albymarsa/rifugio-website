@@ -67,6 +67,38 @@ const { profilo } = Astro.props;
   const successMsg = document.getElementById('form-success')!;
   const errorMsg = document.getElementById('form-error')!;
 
+  const arrivoInput = document.getElementById('data_arrivo') as HTMLInputElement;
+  const partenzaInput = document.getElementById('data_partenza') as HTMLInputElement;
+
+  // Stagione: il rifugio è aperto solo giugno–ottobre.
+  const isClosedDate = (s: string) => {
+    if (!s) return false;
+    const m = Number(s.slice(5, 7));
+    return m < 6 || m > 10;
+  };
+  const prevDay = (s: string) => {
+    const [y, m, d] = s.split('-').map(Number);
+    const p = new Date(y, m - 1, d - 1);
+    return `${p.getFullYear()}-${String(p.getMonth() + 1).padStart(2, '0')}-${String(p.getDate()).padStart(2, '0')}`;
+  };
+  const validateSeason = () => {
+    const a = arrivoInput.value;
+    const p = partenzaInput.value;
+    const msg = 'Il rifugio è chiuso da novembre a maggio. Seleziona date tra giugno e ottobre.';
+    if (a && isClosedDate(a)) {
+      arrivoInput.setCustomValidity(msg);
+    } else {
+      arrivoInput.setCustomValidity('');
+    }
+    if (p && isClosedDate(prevDay(p))) {
+      partenzaInput.setCustomValidity(msg);
+    } else {
+      partenzaInput.setCustomValidity('');
+    }
+  };
+  arrivoInput.addEventListener('change', validateSeason);
+  partenzaInput.addEventListener('change', validateSeason);
+
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
 
