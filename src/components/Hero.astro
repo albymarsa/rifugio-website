@@ -1,12 +1,19 @@
 ---
+import content from '../data/content.json';
+
 interface Props {
-  title: string;
+  title?: string;
   subtitle?: string;
   cta?: { text: string; href: string };
   image?: string;
 }
 
-const { title, subtitle, cta, image = '/images/hero.jpeg' } = Astro.props;
+const {
+  title = content.hero.title,
+  subtitle = content.hero.subtitle,
+  cta = { text: content.hero.cta_text, href: '/prenota' },
+  image = content.hero.image,
+} = Astro.props;
 ---
 
 <section class="hero">

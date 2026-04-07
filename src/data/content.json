@@ -1,0 +1,119 @@
+{
+  "hero": {
+    "title": "Un rifugio alpino non gestito all'alpe Veglia",
+    "subtitle": "25 posti letto a 1750 metri. Un rifugio nel cuore delle Alpi, per chi ama la pace e la montagna.",
+    "cta_text": "Prenota il tuo posto",
+    "image": "/images/hero.jpeg"
+  },
+  "info": {
+    "label": "Il Rifugio",
+    "title": "Un rifugio nel cuore delle Alpi",
+    "paragraphs": [
+      "Situato a 1750 m s.l.m., il Rifugio Rosmini offre un'esperienza di montagna e di pace. Con 25 posti letto, è il punto di partenza ideale per escursioni, arrampicate e per chi cerca il silenzio e la bellezza dell'alta quota.",
+      "Gestito dall'Associazione Amici del Veglia, il rifugio è aperto da metà giugno a metà ottobre e offre un ambiente semplice e accogliente, perfetto per rigenerarsi lontano dalla routine quotidiana."
+    ],
+    "contact_email": "info@rifugiorosmini.it",
+    "details": [
+      {
+        "label": "Posti letto",
+        "value": "25"
+      },
+      {
+        "label": "Altitudine",
+        "value": "1750 m"
+      },
+      {
+        "label": "Stagione",
+        "value": "Metà Giu — Metà Ott"
+      },
+      {
+        "label": "Prezzo",
+        "value": "450 €/giorno"
+      }
+    ]
+  },
+  "directions": {
+    "label": "Come Arrivare",
+    "title": "Raggiungi il rifugio",
+    "steps": [
+      {
+        "number": "01",
+        "heading": "In auto",
+        "text": "Per raggiungere l'Alpe Veglia, arrivati a Varzo (VCO - Verbano Cusio Ossola), proseguire verso la frazione di San Domenico. Attorno a San Domenico c'è possibilità di parcheggio, oppure si può proseguire scendendo per qualche chilometro sul fondo valle per strada asfaltata fino alla località Pontecampo, dove la strada finisce in un'apposita area di parcheggio a pagamento, guadagnando circa mezz'ora ed evitando di camminare lungo la strada asfaltata."
+      },
+      {
+        "number": "02",
+        "heading": "Il sentiero",
+        "text": "Segnaletica e cartelli indicano subito il sentiero, il quale guadagna un tratto sostenuto intersecando poi la mulattiera cementata. La si segue con alcune svolte elevandosi sul versante fino alla Cappella del Groppallo. Da lì, seguire la stradina che si insinua nella Gola della Cairasca, continuando sopra la gola quasi in piano fino all'altipiano dell'Alpe Veglia. Si prosegue dritti fino al rifugio, in fondo all'altipiano, presso l'abitato \"Ponte\" (46°16'22.2\"N 8°08'23.5\"E).",
+        "detail": "Tempo: 1,5 – 2 ore da Pontecampo · Dislivello: circa 540 m"
+      },
+      {
+        "number": "03",
+        "heading": "Cosa portare",
+        "text": "Scarponi da trekking, abbigliamento a strati, abbigliamento per proteggersi dalla pioggia. Sacco a lenzuolo (il rifugio fornisce coperte ma non lenzuola), una torcia frontale."
+      }
+    ]
+  },
+  "gallery": {
+    "label": "Galleria",
+    "title": "Scorci dal rifugio",
+    "images": [
+      {
+        "src": "/images/piana.jpg",
+        "alt": "Piana dell'Alpe Veglia",
+        "large": true
+      },
+      {
+        "src": "/images/AV_220226_fotoLele_55.jpg",
+        "alt": "Alpe Veglia"
+      },
+      {
+        "src": "/images/AlpeVeglia_220226_29.jpg",
+        "alt": "Alpe Veglia"
+      },
+      {
+        "src": "/images/Veglia_Lele_19lug24_7.JPG",
+        "alt": "Alpe Veglia"
+      },
+      {
+        "src": "/images/veglia_lele_ago18_21.JPG",
+        "alt": "Alpe Veglia"
+      },
+      {
+        "src": "/images/P1010252.JPG",
+        "alt": "Rifugio"
+      },
+      {
+        "src": "/images/P1010253.JPG",
+        "alt": "Rifugio"
+      },
+      {
+        "src": "/images/Alpe Veglia_23ott21_6.jpg",
+        "alt": "Alpe Veglia"
+      },
+      {
+        "src": "/images/alpeveglia_08_2011 1111.jpg",
+        "alt": "Alpe Veglia"
+      }
+    ]
+  },
+  "rules": {
+    "label": "Regolamento",
+    "title": "Rispetta la montagna",
+    "items": [
+      "Non è consentito accendere fuochi all'interno o nelle vicinanze del rifugio.",
+      "Lascia il rifugio pulito e in ordine come lo hai trovato.",
+      "L'acqua è una risorsa preziosa in quota: usala con parsimonia.",
+      "Rispetta la fauna e la flora locale. Non raccogliere piante o fiori."
+    ]
+  },
+  "banner": {
+    "title": "Vuoi dormire al rifugio?",
+    "text": "Prenota il tuo posto al rifugio. Conferma via email entro 48 ore.",
+    "cta_text": "Prenota ora"
+  },
+  "footer": {
+    "description": "Gestito dall'Associazione Amici del Veglia.\nPer info e prenotazioni del rifugio: info@rifugiorosmini.it\nPer comunicazioni istituzionali con l'associazione: amicidelveglia@gmail.com",
+    "email": "info@rifugiorosmini.it"
+  }
+}

@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CMS — Rifugio Rosmini</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f5; color: #1a1a1a; }
+
+    .topbar { background: #1a1a1a; color: #fff; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
+    .topbar h1 { font-size: 1rem; letter-spacing: 0.1em; text-transform: uppercase; }
+    .topbar-actions { display: flex; gap: 0.8rem; }
+
+    .btn { padding: 0.5rem 1.2rem; border: none; border-radius: 4px; font-size: 0.85rem; font-weight: 600; cursor: pointer; text-transform: uppercase; letter-spacing: 0.05em; }
+    .btn-save { background: #2563eb; color: #fff; }
+    .btn-save:hover { background: #1d4ed8; }
+    .btn-deploy { background: #16a34a; color: #fff; }
+    .btn-deploy:hover { background: #15803d; }
+    .btn-danger { background: #dc2626; color: #fff; padding: 0.3rem 0.6rem; font-size: 0.75rem; }
+    .btn-small { padding: 0.3rem 0.8rem; font-size: 0.8rem; background: #e5e7eb; color: #1a1a1a; }
+    .btn-small:hover { background: #d1d5db; }
+
+    .container { max-width: 900px; margin: 0 auto; padding: 2rem; }
+
+    .section { background: #fff; border-radius: 8px; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+    .section h2 { font-size: 1rem; text-transform: uppercase; letter-spacing: 0.1em; color: #666; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid #eee; }
+
+    label { display: block; font-size: 0.8rem; font-weight: 600; color: #555; margin-bottom: 0.3rem; text-transform: uppercase; letter-spacing: 0.05em; }
+    input[type="text"], textarea { width: 100%; padding: 0.6rem; border: 1px solid #ddd; border-radius: 4px; font-size: 0.95rem; font-family: inherit; margin-bottom: 1rem; }
+    textarea { min-height: 80px; resize: vertical; }
+
+    .field-group { margin-bottom: 1rem; }
+    .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+
+    /* Gallery */
+    .gallery-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1rem; }
+    .gallery-card { position: relative; border-radius: 6px; overflow: hidden; background: #eee; }
+    .gallery-card img { width: 100%; height: 140px; object-fit: cover; display: block; }
+    .gallery-card .card-actions { position: absolute; top: 4px; right: 4px; display: flex; gap: 4px; }
+    .gallery-card .card-label { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.6); color: #fff; font-size: 0.7rem; padding: 4px 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .gallery-card.large { border: 2px solid #2563eb; }
+
+    .upload-area { border: 2px dashed #ccc; border-radius: 8px; padding: 1.5rem; text-align: center; color: #888; cursor: pointer; transition: border-color 0.2s; }
+    .upload-area:hover { border-color: #2563eb; }
+    .upload-area input { display: none; }
+
+    /* Rules */
+    .rule-item { display: flex; gap: 0.5rem; align-items: start; margin-bottom: 0.5rem; }
+    .rule-item input { flex: 1; }
+    .rule-item .btn-danger { flex-shrink: 0; margin-top: 0.2rem; }
+
+    /* Details */
+    .detail-item { display: grid; grid-template-columns: 1fr 1fr auto; gap: 0.5rem; align-items: start; margin-bottom: 0.5rem; }
+
+    /* Steps */
+    .step-card { background: #f9fafb; border-radius: 6px; padding: 1rem; margin-bottom: 1rem; }
+    .step-card h3 { font-size: 0.85rem; color: #666; margin-bottom: 0.5rem; }
+
+    /* Deploy log */
+    .deploy-log { background: #1a1a1a; color: #4ade80; font-family: 'SF Mono', monospace; font-size: 0.8rem; padding: 1rem; border-radius: 6px; max-height: 300px; overflow-y: auto; white-space: pre-wrap; display: none; margin-top: 1rem; }
+
+    .toast { position: fixed; bottom: 2rem; right: 2rem; background: #1a1a1a; color: #fff; padding: 0.8rem 1.5rem; border-radius: 6px; font-size: 0.9rem; opacity: 0; transition: opacity 0.3s; z-index: 200; }
+    .toast.show { opacity: 1; }
+  </style>
+</head>
+<body>
+
+<div class="topbar">
+  <h1>Rifugio Rosmini — CMS</h1>
+  <div class="topbar-actions">
+    <a href="http://localhost:4321" target="_blank" class="btn btn-small">Anteprima</a>
+    <button class="btn btn-save" onclick="save()">Salva</button>
+    <button class="btn btn-deploy" onclick="deploy()">Pubblica</button>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- HERO -->
+  <div class="section">
+    <h2>Hero</h2>
+    <label>Titolo</label>
+    <input type="text" id="hero-title">
+    <label>Sottotitolo</label>
+    <textarea id="hero-subtitle"></textarea>
+    <label>Testo bottone</label>
+    <input type="text" id="hero-cta">
+    <label>Immagine hero</label>
+    <div style="display:flex; gap:1rem; align-items:center;">
+      <img id="hero-preview" style="height:80px; border-radius:4px; object-fit:cover;">
+      <input type="file" id="hero-upload" accept="image/*" onchange="uploadHero(this)">
+    </div>
+  </div>
+
+  <!-- INFO -->
+  <div class="section">
+    <h2>Il Rifugio</h2>
+    <label>Etichetta sezione</label>
+    <input type="text" id="info-label">
+    <label>Titolo</label>
+    <input type="text" id="info-title">
+    <label>Paragrafi</label>
+    <div id="info-paragraphs"></div>
+    <button class="btn btn-small" onclick="addParagraph()">+ Aggiungi paragrafo</button>
+    <br><br>
+    <label>Email contatto</label>
+    <input type="text" id="info-email">
+    <label>Dettagli</label>
+    <div id="info-details"></div>
+    <button class="btn btn-small" onclick="addDetail()">+ Aggiungi dettaglio</button>
+  </div>
+
+  <!-- COME ARRIVARE -->
+  <div class="section">
+    <h2>Come Arrivare</h2>
+    <label>Etichetta sezione</label>
+    <input type="text" id="dir-label">
+    <label>Titolo</label>
+    <input type="text" id="dir-title">
+    <div id="dir-steps"></div>
+  </div>
+
+  <!-- GALLERIA -->
+  <div class="section">
+    <h2>Galleria</h2>
+    <label>Etichetta sezione</label>
+    <input type="text" id="gal-label">
+    <label>Titolo</label>
+    <input type="text" id="gal-title">
+    <label>Foto (la prima con bordo blu è quella grande)</label>
+    <div class="gallery-grid" id="gallery-grid"></div>
+    <div class="upload-area" onclick="document.getElementById('gal-upload').click()">
+      <input type="file" id="gal-upload" accept="image/*" multiple onchange="uploadGalleryImages(this)">
+      Clicca o trascina per aggiungere foto
+    </div>
+  </div>
+
+  <!-- REGOLAMENTO -->
+  <div class="section">
+    <h2>Regolamento</h2>
+    <label>Etichetta sezione</label>
+    <input type="text" id="rules-label">
+    <label>Titolo</label>
+    <input type="text" id="rules-title">
+    <label>Regole</label>
+    <div id="rules-list"></div>
+    <button class="btn btn-small" onclick="addRule()">+ Aggiungi regola</button>
+  </div>
+
+  <!-- BANNER -->
+  <div class="section">
+    <h2>Banner finale</h2>
+    <label>Titolo</label>
+    <input type="text" id="banner-title">
+    <label>Testo</label>
+    <input type="text" id="banner-text">
+    <label>Testo bottone</label>
+    <input type="text" id="banner-cta">
+  </div>
+
+  <!-- FOOTER -->
+  <div class="section">
+    <h2>Footer</h2>
+    <label>Descrizione</label>
+    <textarea id="footer-desc"></textarea>
+    <label>Email</label>
+    <input type="text" id="footer-email">
+  </div>
+
+  <!-- DEPLOY LOG -->
+  <div class="deploy-log" id="deploy-log"></div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+let content = {};
+
+// ---------- LOAD ----------
+async function load() {
+  content = await (await fetch('/api/content')).json();
+  render();
+}
+
+function render() {
+  // Hero
+  document.getElementById('hero-title').value = content.hero.title;
+  document.getElementById('hero-subtitle').value = content.hero.subtitle;
+  document.getElementById('hero-cta').value = content.hero.cta_text;
+  document.getElementById('hero-preview').src = content.hero.image;
+
+  // Info
+  document.getElementById('info-label').value = content.info.label;
+  document.getElementById('info-title').value = content.info.title;
+  document.getElementById('info-email').value = content.info.contact_email;
+  renderParagraphs();
+  renderDetails();
+
+  // Directions
+  document.getElementById('dir-label').value = content.directions.label;
+  document.getElementById('dir-title').value = content.directions.title;
+  renderSteps();
+
+  // Gallery
+  document.getElementById('gal-label').value = content.gallery.label;
+  document.getElementById('gal-title').value = content.gallery.title;
+  renderGallery();
+
+  // Rules
+  document.getElementById('rules-label').value = content.rules.label;
+  document.getElementById('rules-title').value = content.rules.title;
+  renderRules();
+
+  // Banner
+  document.getElementById('banner-title').value = content.banner.title;
+  document.getElementById('banner-text').value = content.banner.text;
+  document.getElementById('banner-cta').value = content.banner.cta_text;
+
+  // Footer
+  document.getElementById('footer-desc').value = content.footer.description;
+  document.getElementById('footer-email').value = content.footer.email;
+}
+
+// ---------- PARAGRAPHS ----------
+function renderParagraphs() {
+  const el = document.getElementById('info-paragraphs');
+  el.innerHTML = content.info.paragraphs.map((p, i) => `
+    <div class="rule-item">
+      <textarea oninput="content.info.paragraphs[${i}]=this.value">${p}</textarea>
+      <button class="btn btn-danger" onclick="content.info.paragraphs.splice(${i},1);renderParagraphs()">✕</button>
+    </div>
+  `).join('');
+}
+function addParagraph() { content.info.paragraphs.push(''); renderParagraphs(); }
+
+// ---------- DETAILS ----------
+function renderDetails() {
+  const el = document.getElementById('info-details');
+  el.innerHTML = content.info.details.map((d, i) => `
+    <div class="detail-item">
+      <input type="text" value="${d.label}" placeholder="Etichetta" oninput="content.info.details[${i}].label=this.value">
+      <input type="text" value="${d.value}" placeholder="Valore" oninput="content.info.details[${i}].value=this.value">
+      <button class="btn btn-danger" onclick="content.info.details.splice(${i},1);renderDetails()">✕</button>
+    </div>
+  `).join('');
+}
+function addDetail() { content.info.details.push({label:'',value:''}); renderDetails(); }
+
+// ---------- STEPS ----------
+function renderSteps() {
+  const el = document.getElementById('dir-steps');
+  el.innerHTML = content.directions.steps.map((s, i) => `
+    <div class="step-card">
+      <h3>Passo ${s.number}</h3>
+      <label>Titolo</label>
+      <input type="text" value="${esc(s.heading)}" oninput="content.directions.steps[${i}].heading=this.value">
+      <label>Testo</label>
+      <textarea oninput="content.directions.steps[${i}].text=this.value">${esc(s.text)}</textarea>
+      <label>Dettaglio (opzionale)</label>
+      <input type="text" value="${esc(s.detail||'')}" oninput="content.directions.steps[${i}].detail=this.value||undefined">
+    </div>
+  `).join('');
+}
+
+// ---------- GALLERY ----------
+function renderGallery() {
+  const el = document.getElementById('gallery-grid');
+  el.innerHTML = content.gallery.images.map((img, i) => `
+    <div class="gallery-card${img.large ? ' large' : ''}">
+      <img src="${img.src}" alt="${esc(img.alt)}">
+      <div class="card-actions">
+        ${!img.large ? `<button class="btn btn-small" style="font-size:0.65rem;padding:2px 6px" onclick="setLarge(${i})" title="Imposta come foto grande">★</button>` : ''}
+        <button class="btn btn-danger" style="font-size:0.65rem;padding:2px 6px" onclick="removeGalleryImage(${i})">✕</button>
+      </div>
+      <div class="card-label">${img.src.split('/').pop()}</div>
+    </div>
+  `).join('');
+}
+
+function setLarge(idx) {
+  content.gallery.images.forEach((img, i) => { img.large = (i === idx); });
+  renderGallery();
+}
+
+function removeGalleryImage(idx) {
+  if (!confirm('Rimuovere questa foto dalla galleria?')) return;
+  content.gallery.images.splice(idx, 1);
+  renderGallery();
+}
+
+async function uploadGalleryImages(input) {
+  for (const file of input.files) {
+    const form = new FormData();
+    form.append('file', file);
+    const res = await fetch('/api/images/upload', { method: 'POST', body: form });
+    const data = await res.json();
+    content.gallery.images.push({ src: data.src, alt: 'Alpe Veglia', large: false });
+  }
+  renderGallery();
+  input.value = '';
+}
+
+// ---------- HERO UPLOAD ----------
+async function uploadHero(input) {
+  const file = input.files[0];
+  if (!file) return;
+  // Rinomina a hero + estensione originale
+  const ext = file.name.split('.').pop();
+  const heroFile = new File([file], `hero.${ext}`, { type: file.type });
+  const form = new FormData();
+  form.append('file', heroFile);
+  const res = await fetch('/api/images/upload', { method: 'POST', body: form });
+  const data = await res.json();
+  content.hero.image = data.src;
+  document.getElementById('hero-preview').src = data.src;
+  toast('Hero aggiornata');
+}
+
+// ---------- RULES ----------
+function renderRules() {
+  const el = document.getElementById('rules-list');
+  el.innerHTML = content.rules.items.map((r, i) => `
+    <div class="rule-item">
+      <input type="text" value="${esc(r)}" oninput="content.rules.items[${i}]=this.value">
+      <button class="btn btn-danger" onclick="content.rules.items.splice(${i},1);renderRules()">✕</button>
+    </div>
+  `).join('');
+}
+function addRule() { content.rules.items.push(''); renderRules(); }
+
+// ---------- COLLECT & SAVE ----------
+function collect() {
+  content.hero.title = document.getElementById('hero-title').value;
+  content.hero.subtitle = document.getElementById('hero-subtitle').value;
+  content.hero.cta_text = document.getElementById('hero-cta').value;
+
+  content.info.label = document.getElementById('info-label').value;
+  content.info.title = document.getElementById('info-title').value;
+  content.info.contact_email = document.getElementById('info-email').value;
+
+  content.directions.label = document.getElementById('dir-label').value;
+  content.directions.title = document.getElementById('dir-title').value;
+
+  content.gallery.label = document.getElementById('gal-label').value;
+  content.gallery.title = document.getElementById('gal-title').value;
+
+  content.rules.label = document.getElementById('rules-label').value;
+  content.rules.title = document.getElementById('rules-title').value;
+
+  content.banner.title = document.getElementById('banner-title').value;
+  content.banner.text = document.getElementById('banner-text').value;
+  content.banner.cta_text = document.getElementById('banner-cta').value;
+
+  content.footer.description = document.getElementById('footer-desc').value;
+  content.footer.email = document.getElementById('footer-email').value;
+}
+
+async function save() {
+  collect();
+  await fetch('/api/content', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(content),
+  });
+  toast('Salvato!');
+}
+
+// ---------- DEPLOY ----------
+async function deploy() {
+  if (!confirm('Vuoi pubblicare le modifiche sul sito?')) return;
+  await save();
+  const log = document.getElementById('deploy-log');
+  log.style.display = 'block';
+  log.textContent = '';
+
+  const res = await fetch('/api/deploy', { method: 'POST' });
+  const reader = res.body.getReader();
+  const decoder = new TextDecoder();
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    log.textContent += decoder.decode(value);
+    log.scrollTop = log.scrollHeight;
+  }
+  toast('Deploy terminato');
+}
+
+// ---------- HELPERS ----------
+function esc(s) { return (s||'').replace(/"/g, '&quot;').replace(/</g, '&lt;'); }
+
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2500);
+}
+
+// Drag & drop sulla galleria
+document.addEventListener('DOMContentLoaded', () => {
+  load();
+  const area = document.querySelector('.upload-area');
+  area.addEventListener('dragover', e => { e.preventDefault(); area.style.borderColor = '#2563eb'; });
+  area.addEventListener('dragleave', () => { area.style.borderColor = '#ccc'; });
+  area.addEventListener('drop', e => {
+    e.preventDefault();
+    area.style.borderColor = '#ccc';
+    document.getElementById('gal-upload').files = e.dataTransfer.files;
+    uploadGalleryImages(document.getElementById('gal-upload'));
+  });
+});
+</script>
+</body>
+</html>

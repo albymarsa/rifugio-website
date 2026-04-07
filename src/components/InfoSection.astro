@@ -1,41 +1,28 @@
+---
+import content from '../data/content.json';
+const { label, title, paragraphs, contact_email, details } = content.info;
+---
+
 <section class="section">
   <div class="container info">
-    <span class="section-label">Il Rifugio</span>
-    <h2 class="section-title">Un rifugio autentico nel cuore delle Alpi</h2>
+    <span class="section-label">{label}</span>
+    <h2 class="section-title">{title}</h2>
     <div class="info__content">
       <div class="info__text">
-        <p>
-          Situato a 1750 m s.l.m., il Rifugio Rosmini offre un'esperienza
-          autentica di montagna. Con 25 posti letto, è il punto di partenza ideale
-          per escursioni, arrampicate e per chi cerca il silenzio e la bellezza
-          dell'alta quota.
-        </p>
-        <p class="mt-2">
-          Gestito dall'Associazione Amici del Veglia, il rifugio è aperto
-          da metà giugno a metà ottobre e offre un ambiente semplice e accogliente,
-          perfetto per rigenerarsi lontano dalla routine quotidiana.
-        </p>
-        <p class="mt-2">
-          Per richieste particolari scrivi a <a href="mailto:info@rifugiorosmini.it">info@rifugiorosmini.it</a>.
-        </p>
+        {paragraphs.map((p: string) => <p class="mt-2">{p}</p>)}
+        {contact_email && (
+          <p class="mt-2">
+            Per richieste particolari scrivi a <a href={`mailto:${contact_email}`}>{contact_email}</a>.
+          </p>
+        )}
       </div>
       <div class="info__details">
-        <div class="info__detail">
-          <span class="info__detail-label">Posti letto</span>
-          <span class="info__detail-value">25</span>
-        </div>
-        <div class="info__detail">
-          <span class="info__detail-label">Altitudine</span>
-          <span class="info__detail-value">1750 m</span>
-        </div>
-        <div class="info__detail">
-          <span class="info__detail-label">Stagione</span>
-          <span class="info__detail-value">Metà Giu — Metà Ott</span>
-        </div>
-        <div class="info__detail">
-          <span class="info__detail-label">Prezzo</span>
-          <span class="info__detail-value">450 €/giorno</span>
-        </div>
+        {details.map((d: { label: string; value: string }) => (
+          <div class="info__detail">
+            <span class="info__detail-label">{d.label}</span>
+            <span class="info__detail-value">{d.value}</span>
+          </div>
+        ))}
       </div>
     </div>
   </div>
