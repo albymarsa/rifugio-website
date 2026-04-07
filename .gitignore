@@ -23,4 +23,13 @@ pnpm-debug.log*
 # jetbrains setting folder
 .idea/
 .wrangler/
-.claude/
+.claude/*
+!.claude/settings.json
+.vercel
+
+# test artifacts
+playwright-report/
+test-results/
+
+# cms local install
+cms/node_modules/

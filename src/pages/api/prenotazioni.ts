@@ -2,27 +2,12 @@ export const prerender = false;
 
 import type { APIRoute } from 'astro';
 import { createClient } from '@supabase/supabase-js';
+import { checkCsrf } from '../../lib/csrf';
+import { validateBookingDates } from '../../lib/booking';
 
 export const POST: APIRoute = async ({ request, cookies }) => {
   try {
-    // Verifica Origin (CSRF protection): l'origin deve corrispondere all'host della richiesta
-    const origin = request.headers.get('origin');
-    const host = request.headers.get('host');
-    if (!origin || !host) {
-      return new Response(JSON.stringify({ error: 'Richiesta non autorizzata' }), {
-        status: 403,
-        headers: { 'Content-Type': 'application/json' },
-      });
-    }
-    try {
-      const originHost = new URL(origin).host;
-      if (originHost !== host) {
-        return new Response(JSON.stringify({ error: 'Richiesta non autorizzata' }), {
-          status: 403,
-          headers: { 'Content-Type': 'application/json' },
-        });
-      }
-    } catch {
+    if (!checkCsrf(request)) {
       return new Response(JSON.stringify({ error: 'Richiesta non autorizzata' }), {
         status: 403,
         headers: { 'Content-Type': 'application/json' },
@@ -76,27 +61,9 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     const body = await request.json();
     const { data_arrivo, data_partenza, note } = body;
 
-    // Validazione campi obbligatori
-    if (!data_arrivo || !data_partenza) {
-      return new Response(JSON.stringify({ error: 'Campi obbligatori mancanti' }), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json' },
-      });
-    }
-
-    // Validazione date
-    const arrivo = new Date(data_arrivo);
-    const partenza = new Date(data_partenza);
-    if (isNaN(arrivo.getTime()) || isNaN(partenza.getTime()) || partenza <= arrivo) {
-      return new Response(JSON.stringify({ error: 'Date non valide: la partenza deve essere successiva all\'arrivo' }), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json' },
-      });
-    }
-
-    // Validazione lunghezza note
-    if (note && typeof note === 'string' && note.length > 2000) {
-      return new Response(JSON.stringify({ error: 'Note troppo lunghe (max 2000 caratteri)' }), {
+    const validation = validateBookingDates(data_arrivo, data_partenza, note);
+    if (!validation.ok) {
+      return new Response(JSON.stringify({ error: validation.error }), {
         status: 400,
         headers: { 'Content-Type': 'application/json' },
       });

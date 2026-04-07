@@ -3,8 +3,7 @@ export const prerender = false;
 import type { APIRoute } from 'astro';
 import { createClient } from '@supabase/supabase-js';
 import { jsonError, jsonOk } from '../../lib/auth';
-
-const CAPACITA = 25;
+import { aggregateOccupancy, CAPACITA } from '../../lib/booking';
 
 /** GET: Restituisce l'occupazione aggregata per giorno di un dato mese (endpoint pubblico) */
 export const GET: APIRoute = async ({ url }) => {
@@ -24,7 +23,7 @@ export const GET: APIRoute = async ({ url }) => {
       return jsonError('Parametri anno o mese non validi', 400);
     }
 
-    // Calcola limiti del mese
+    // Calcola limiti del mese (per il filtro SQL sui bordi)
     const monthStart = `${anno}-${String(mese).padStart(2, '0')}-01`;
     const nextMonth = mese === 12 ? `${anno + 1}-01-01` : `${anno}-${String(mese + 1).padStart(2, '0')}-01`;
 
@@ -53,23 +52,7 @@ export const GET: APIRoute = async ({ url }) => {
       return jsonError('Errore nel caricamento dei dati', 500);
     }
 
-    // Aggrega occupazione per giorno
-    const occupazione: Record<string, number> = {};
-
-    for (const booking of bookings || []) {
-      // Itera da data_arrivo a data_partenza (escluso ultimo giorno)
-      let current = booking.data_arrivo;
-      while (current < booking.data_partenza) {
-        // Conta solo i giorni dentro il mese richiesto
-        if (current >= monthStart && current < nextMonth) {
-          occupazione[current] = (occupazione[current] || 0) + booking.num_persone;
-        }
-        // Incrementa di un giorno usando manipolazione stringa
-        const [y, m, d] = current.split('-').map(Number);
-        const next = new Date(y, m - 1, d + 1);
-        current = `${next.getFullYear()}-${String(next.getMonth() + 1).padStart(2, '0')}-${String(next.getDate()).padStart(2, '0')}`;
-      }
-    }
+    const occupazione = aggregateOccupancy(bookings || [], anno, mese);
 
     return jsonOk({ occupazione, capacita: CAPACITA });
   } catch {
