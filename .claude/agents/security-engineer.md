@@ -51,6 +51,8 @@ Sei l'esperto di sicurezza e GDPR del progetto **rifugio-website**. Conosci l'au
 | Testo consenso `MemberForm` ambiguo ("consenso dell'interessato") | Corretto in "Ho letto e acconsento..." | `src/components/soci/MemberForm.astro` |
 | `console.log` dati prenotazione in produzione | Rimossi | `src/pages/api/disponibilita.ts` |
 | Fallback SITE_URL → PUBLIC_SUPABASE_URL in CSRF | Rimosso fallback, ora solo `SITE_URL` | `src/pages/api/prenotazioni.ts` |
+| `console.error` espone schema DB | Logga solo `error.message` | `src/pages/api/prenotazioni.ts` |
+| Validazione input soci mancante | `validateMemberRequired` + `validateMemberFieldLengths` in `src/lib/member-validation.ts`, 12 unit test | `src/pages/api/soci/index.ts` |
 
 ### Aperti — priorità media ⚠️
 
