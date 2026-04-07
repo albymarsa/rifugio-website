@@ -98,7 +98,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     }]);
 
     if (error) {
-      console.error('[API prenotazioni] Errore insert:', error.message, error.code, error.details, error.hint);
+      console.error('[API prenotazioni] Errore insert:', error.message);
       return new Response(JSON.stringify({ error: 'Errore nel salvataggio della prenotazione' }), {
         status: 500,
         headers: { 'Content-Type': 'application/json' },

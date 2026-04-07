@@ -2,6 +2,7 @@ export const prerender = false;
 
 import type { APIRoute } from 'astro';
 import { getAuthenticatedClient, jsonError, jsonOk } from '../../../lib/auth';
+import { validateMemberRequired, validateMemberFieldLengths } from '../../../lib/member-validation';
 
 export const POST: APIRoute = async ({ request, cookies }) => {
   try {
@@ -26,9 +27,11 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       tipo_socio: 'ordinario',
     };
 
-    if (!memberData.nome || !memberData.cognome || !memberData.email) {
-      return jsonError('Nome, cognome e email sono obbligatori', 400);
-    }
+    const requiredCheck = validateMemberRequired(memberData.nome, memberData.cognome, memberData.email);
+    if (!requiredCheck.ok) return jsonError(requiredCheck.error, 400);
+
+    const lengthCheck = validateMemberFieldLengths(memberData);
+    if (!lengthCheck.ok) return jsonError(lengthCheck.error, 400);
 
     const { error } = await supabase.from('soci').insert([memberData]);
 
