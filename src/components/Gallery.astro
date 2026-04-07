@@ -1,35 +1,18 @@
+---
+import content from '../data/content.json';
+const { label, title, images } = content.gallery;
+---
+
 <section class="section section--alt">
   <div class="container">
-    <span class="section-label">Galleria</span>
-    <h2 class="section-title">Scorci dal rifugio</h2>
+    <span class="section-label">{label}</span>
+    <h2 class="section-title">{title}</h2>
     <div class="gallery__grid">
-      <div class="gallery__item gallery__item--large">
-        <img src="/images/piana.jpg" alt="Alpe Veglia" loading="lazy" />
-      </div>
-      <div class="gallery__item">
-        <img src="/images/AV_220226_fotoLele_55.jpg" alt="Alpe Veglia" loading="lazy" />
-      </div>
-      <div class="gallery__item">
-        <img src="/images/AlpeVeglia_220226_29.jpg" alt="Alpe Veglia" loading="lazy" />
-      </div>
-      <div class="gallery__item">
-        <img src="/images/Veglia_Lele_19lug24_7.JPG" alt="Alpe Veglia" loading="lazy" />
-      </div>
-      <div class="gallery__item">
-        <img src="/images/veglia_lele_ago18_21.JPG" alt="Alpe Veglia" loading="lazy" />
-      </div>
-      <div class="gallery__item">
-        <img src="/images/P1010252.JPG" alt="Rifugio" loading="lazy" />
-      </div>
-      <div class="gallery__item">
-        <img src="/images/P1010253.JPG" alt="Rifugio" loading="lazy" />
-      </div>
-      <div class="gallery__item">
-        <img src="/images/Alpe%20Veglia_23ott21_6.jpg" alt="Alpe Veglia" loading="lazy" />
-      </div>
-      <div class="gallery__item">
-        <img src="/images/alpeveglia_08_2011%201111.jpg" alt="Alpe Veglia" loading="lazy" />
-      </div>
+      {images.map((img: { src: string; alt: string; large?: boolean }) => (
+        <div class={`gallery__item${img.large ? ' gallery__item--large' : ''}`}>
+          <img src={img.src} alt={img.alt} loading="lazy" />
+        </div>
+      ))}
     </div>
   </div>
 </section>

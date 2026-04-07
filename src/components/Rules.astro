@@ -1,32 +1,19 @@
+---
+import content from '../data/content.json';
+const { label, title, items } = content.rules;
+---
+
 <section class="section">
   <div class="container">
-    <span class="section-label">Regolamento</span>
-    <h2 class="section-title">Rispetta la montagna</h2>
+    <span class="section-label">{label}</span>
+    <h2 class="section-title">{title}</h2>
     <div class="rules__grid">
-      <div class="rules__item">
-        <span class="rules__icon">&#9650;</span>
-        <p>Porta via tutti i tuoi rifiuti. Il rifugio non ha servizio di raccolta.</p>
-      </div>
-      <div class="rules__item">
-        <span class="rules__icon">&#9650;</span>
-        <p>Silenzio dopo le 22:00 per rispetto degli altri ospiti.</p>
-      </div>
-      <div class="rules__item">
-        <span class="rules__icon">&#9650;</span>
-        <p>Non è consentito accendere fuochi all'interno o nelle vicinanze del rifugio.</p>
-      </div>
-      <div class="rules__item">
-        <span class="rules__icon">&#9650;</span>
-        <p>Lascia il rifugio pulito e in ordine come lo hai trovato.</p>
-      </div>
-      <div class="rules__item">
-        <span class="rules__icon">&#9650;</span>
-        <p>L'acqua è una risorsa preziosa in quota: usala con parsimonia.</p>
-      </div>
-      <div class="rules__item">
-        <span class="rules__icon">&#9650;</span>
-        <p>Rispetta la fauna e la flora locale. Non raccogliere piante o fiori.</p>
-      </div>
+      {items.map((rule: string) => (
+        <div class="rules__item">
+          <span class="rules__icon">&#9650;</span>
+          <p>{rule}</p>
+        </div>
+      ))}
     </div>
   </div>
 </section>

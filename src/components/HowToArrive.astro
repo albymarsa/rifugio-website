@@ -1,34 +1,25 @@
+---
+import content from '../data/content.json';
+const { label, title, steps } = content.directions;
+---
+
 <section class="section section--alt">
   <div class="container">
-    <span class="section-label">Come Arrivare</span>
-    <h2 class="section-title">Raggiungi il rifugio</h2>
+    <span class="section-label">{label}</span>
+    <h2 class="section-title">{title}</h2>
     <div class="arrive__grid">
-      <div class="arrive__step">
-        <span class="arrive__number">01</span>
-        <h3>In auto</h3>
-        <p>
-          Per raggiungere l'Alpe Veglia, arrivati a Varzo (VCO - Verbano Cusio Ossola), proseguire verso la frazione di San Domenico. Attorno a San Domenico c'è possibilità di parcheggio, oppure si può proseguire scendendo per qualche chilometro sul fondo valle per strada asfaltata fino alla località Pontecampo, dove la strada finisce in un'apposita area di parcheggio a pagamento, guadagnando circa mezz'ora ed evitando di camminare lungo la strada asfaltata.
-        </p>
-      </div>
-      <div class="arrive__step">
-        <span class="arrive__number">02</span>
-        <h3>Il sentiero</h3>
-        <p>
-          Segnaletica e cartelli indicano subito il sentiero, il quale guadagna un tratto sostenuto intersecando poi la mulattiera cementata. La si segue con alcune svolte elevandosi sul versante fino alla Cappella del Groppallo. Da lì, seguire la stradina che si insinua nella Gola della Cairasca, continuando sopra la gola quasi in piano fino all'altipiano dell'Alpe Veglia. Si prosegue dritti fino al rifugio, in fondo all'altipiano, presso l'abitato "Ponte" (46°16'22.2"N 8°08'23.5"E).
-        </p>
-        <p style="margin-top: 0.8rem; font-size: 0.9rem; color: var(--color-gray);">
-          Tempo: 1,5 – 2 ore da Pontecampo · Dislivello: circa 540 m
-        </p>
-      </div>
-      <div class="arrive__step">
-        <span class="arrive__number">03</span>
-        <h3>Cosa portare</h3>
-        <p>
-          Scarponi da trekking, abbigliamento a strati, acqua sufficiente,
-          sacco a pelo (il rifugio fornisce coperte ma non lenzuola),
-          e una torcia frontale.
-        </p>
-      </div>
+      {steps.map((step: { number: string; heading: string; text: string; detail?: string }) => (
+        <div class="arrive__step">
+          <span class="arrive__number">{step.number}</span>
+          <h3>{step.heading}</h3>
+          <p>{step.text}</p>
+          {step.detail && (
+            <p style="margin-top: 0.8rem; font-size: 0.9rem; color: var(--color-gray);">
+              {step.detail}
+            </p>
+          )}
+        </div>
+      ))}
     </div>
   </div>
 </section>

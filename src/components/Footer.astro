@@ -1,5 +1,8 @@
 ---
+import content from '../data/content.json';
+const { description, email } = content.footer;
 const year = new Date().getFullYear();
+const descLines = description.split('\n');
 ---
 
 <footer class="footer">
@@ -8,14 +11,18 @@ const year = new Date().getFullYear();
       <div class="footer__col">
         <h3 class="footer__heading">Rifugio Rosmini</h3>
         <p class="footer__text">
-          Gestito dall'Associazione Amici del Veglia.<br />
-          Un luogo autentico nel cuore delle montagne.
+          {descLines.map((line: string, i: number) => (
+            <>
+              {i > 0 && <br />}
+              {line}
+            </>
+          ))}
         </p>
       </div>
       <div class="footer__col">
         <h3 class="footer__heading">Contatti</h3>
         <p class="footer__text">
-          <a href="mailto:amicidelveglia@gmail.com">amicidelveglia@gmail.com</a>
+          <a href={`mailto:${email}`}>{email}</a>
         </p>
       </div>
       <div class="footer__col">

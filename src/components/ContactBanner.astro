@@ -1,10 +1,15 @@
+---
+import content from '../data/content.json';
+const { title, text, cta_text } = content.banner;
+---
+
 <section class="banner">
   <div class="container banner__inner">
     <div>
-      <h2 class="banner__title">Vuoi dormire al rifugio?</h2>
-      <p class="banner__text">Prenota il tuo posto al rifugio. Conferma manuale entro 48 ore.</p>
+      <h2 class="banner__title">{title}</h2>
+      <p class="banner__text">{text}</p>
     </div>
-    <a href="/prenota" class="btn btn-primary">Prenota ora</a>
+    <a href="/prenota" class="btn btn-primary">{cta_text}</a>
   </div>
 </section>
 
