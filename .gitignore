@@ -25,6 +25,7 @@ pnpm-debug.log*
 .wrangler/
 .claude/*
 !.claude/settings.json
+!.claude/agents/
 .vercel
 
 # test artifacts
