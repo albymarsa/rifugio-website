@@ -1,6 +1,6 @@
 ---
 import content from '../data/content.json';
-const { description, email } = content.footer;
+const { description, email, facebook_url } = content.footer;
 const year = new Date().getFullYear();
 const descLines = description.split('\n');
 ---
@@ -24,6 +24,14 @@ const descLines = description.split('\n');
         <p class="footer__text">
           <a href={`mailto:${email}`}>{email}</a>
         </p>
+        {facebook_url && (
+          <a href={facebook_url} target="_blank" rel="noopener noreferrer" class="footer__social" aria-label="Facebook">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/>
+            </svg>
+            Facebook
+          </a>
+        )}
       </div>
       <div class="footer__col">
         <h3 class="footer__heading">Link</h3>
@@ -94,6 +102,21 @@ const descLines = description.split('\n');
   }
 
   .footer__nav a:hover {
+    color: var(--color-white);
+    text-decoration: none;
+  }
+
+  .footer__social {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: var(--color-gray-light);
+    font-size: 0.95rem;
+    margin-top: 0.6rem;
+    transition: color 0.2s;
+  }
+
+  .footer__social:hover {
     color: var(--color-white);
     text-decoration: none;
   }

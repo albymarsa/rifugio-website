@@ -10,7 +10,7 @@
     "title": "Un rifugio nel cuore delle Alpi",
     "paragraphs": [
       "Situato a 1750 m s.l.m., il Rifugio Rosmini offre un'esperienza di montagna e di pace. Con 25 posti letto, è il punto di partenza ideale per escursioni, arrampicate e per chi cerca il silenzio e la bellezza dell'alta quota.",
-      "Gestito dall'Associazione Amici del Veglia, il rifugio è aperto da metà giugno a metà ottobre e offre un ambiente semplice e accogliente, perfetto per rigenerarsi lontano dalla routine quotidiana."
+      "Gestito dall'Associazione Amici del Veglia, il rifugio è aperto da metà giugno a metà ottobre e offre un ambiente semplice e accogliente."
     ],
     "contact_email": "info@rifugiorosmini.it",
     "details": [
@@ -114,6 +114,7 @@
   },
   "footer": {
     "description": "Gestito dall'Associazione Amici del Veglia.\nPer info e prenotazioni del rifugio: info@rifugiorosmini.it\nPer comunicazioni istituzionali con l'associazione: amicidelveglia@gmail.com",
-    "email": "info@rifugiorosmini.it"
+    "email": "info@rifugiorosmini.it",
+    "facebook_url": "https://www.facebook.com/rifugiorosmini/"
   }
 }
