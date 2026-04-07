@@ -45,4 +45,17 @@ test.describe('Content binding (CMS → home)', () => {
     const firstParagraph = content.info.paragraphs[0];
     await expect(page.locator('.info__text p').first()).toHaveText(firstParagraph);
   });
+
+  test('footer Facebook link href matches content.json', async ({ page }) => {
+    await page.goto('/');
+    await expect(page.locator('.footer__social')).toHaveAttribute('href', content.footer.facebook_url);
+  });
+
+  test('footer Facebook link has target="_blank" and rel noopener', async ({ page }) => {
+    await page.goto('/');
+    const link = page.locator('.footer__social');
+    await expect(link).toHaveAttribute('target', '_blank');
+    const rel = await link.getAttribute('rel');
+    expect(rel).toContain('noopener');
+  });
 });
