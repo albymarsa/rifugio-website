@@ -11,9 +11,10 @@ test.describe('Home page', () => {
     const response = await page.goto('/');
     expect(response?.status()).toBe(200);
 
-    // Sezioni principali
-    await expect(page.locator('header')).toBeVisible();
-    await expect(page.locator('footer')).toBeVisible();
+    // Sezioni principali (selettori specifici, evita header/footer iniettati
+    // dalla dev toolbar di Astro)
+    await expect(page.locator('header.header')).toBeVisible();
+    await expect(page.locator('.hero')).toBeVisible();
 
     // Calendario disponibilità presente
     const calendar = page.locator('[class*="calendario"], [id*="calendario"], [data-testid="calendario"]').first();
