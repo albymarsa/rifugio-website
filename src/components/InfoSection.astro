@@ -12,7 +12,7 @@ const { label, title, paragraphs, contact_email, details } = content.info;
         {paragraphs.map((p: string) => <p class="mt-2">{p}</p>)}
         {contact_email && (
           <p class="mt-2">
-            Per richieste particolari scrivi a <a href={`mailto:${contact_email}`}>{contact_email}</a>.
+            Per informazioni e richieste particolari scrivi a <a href={`mailto:${contact_email}`}>{contact_email}</a>.
           </p>
         )}
       </div>
