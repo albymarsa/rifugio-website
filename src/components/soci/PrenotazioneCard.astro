@@ -92,11 +92,9 @@ const statoLabels: Record<string, string> = {
         {partecipanti.map((p) => (
           <li>
             {p.nome} {p.cognome}
-            {showAdmin && (
-              <button class="pren-card__remove-btn" data-remove-socio={p.id} data-prenotazione={prenotazione.id} title="Rimuovi">
-                &times;
-              </button>
-            )}
+            <button class="pren-card__remove-btn" data-remove-socio={p.id} data-prenotazione={prenotazione.id} title="Rimuovi">
+              &times;
+            </button>
           </li>
         ))}
       </ul>
@@ -108,10 +106,7 @@ const statoLabels: Record<string, string> = {
   <!-- Aggiungi partecipante (soci del gruppo per utenti normali, tutti i soci per admin) -->
   {sociDisponibili.length > 0 && (
     <div class="pren-card__add" data-add-section={prenotazione.id}>
-      <button class="btn btn-outline pren-card__add-btn" data-toggle-add={prenotazione.id}>
-        + Aggiungi partecipante
-      </button>
-      <div class="pren-card__add-form" data-add-form={prenotazione.id} hidden>
+      <div class="pren-card__add-form" data-add-form={prenotazione.id}>
         <select data-add-select={prenotazione.id} class="pren-card__select">
           <option value="">Seleziona socio...</option>
           {sociDisponibili.map((s) => (
@@ -119,7 +114,7 @@ const statoLabels: Record<string, string> = {
           ))}
         </select>
         <button class="btn btn-primary pren-card__confirm-btn" data-confirm-add={prenotazione.id}>
-          Associa
+          Aggiungi partecipante
         </button>
       </div>
     </div>
@@ -287,16 +282,10 @@ const statoLabels: Record<string, string> = {
     margin-bottom: 1rem;
   }
 
-  .pren-card__add-btn {
-    padding: 0.5rem 1.2rem;
-    font-size: 0.75rem;
-  }
-
   .pren-card__add-form {
     display: flex;
     gap: 0.8rem;
     align-items: center;
-    margin-top: 0.8rem;
   }
 
   .pren-card__select {

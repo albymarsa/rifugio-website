@@ -207,17 +207,6 @@ const annullate = (prenotazioni || []).filter((p: any) => p.stato === 'annullata
   });
 
   // === Aggiungi partecipante ===
-  document.querySelectorAll('[data-toggle-add]').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      const prenId = (btn as HTMLElement).getAttribute('data-toggle-add')!;
-      const form = document.querySelector(`[data-add-form="${prenId}"]`) as HTMLElement;
-      if (form) {
-        form.hidden = !form.hidden;
-        (btn as HTMLElement).hidden = !form.hidden;
-      }
-    });
-  });
-
   document.querySelectorAll('[data-confirm-add]').forEach((btn) => {
     btn.addEventListener('click', async () => {
       const prenId = (btn as HTMLElement).getAttribute('data-confirm-add')!;

@@ -353,17 +353,6 @@ const profiloDati = profilo ? {
   });
 
   // === Aggiungi partecipante a prenotazione ===
-  document.querySelectorAll('[data-toggle-add]').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      const prenId = (btn as HTMLElement).getAttribute('data-toggle-add')!;
-      const form = document.querySelector(`[data-add-form="${prenId}"]`) as HTMLElement;
-      if (form) {
-        form.hidden = !form.hidden;
-        (btn as HTMLElement).hidden = !form.hidden;
-      }
-    });
-  });
-
   document.querySelectorAll('[data-confirm-add]').forEach((btn) => {
     btn.addEventListener('click', async () => {
       const prenId = (btn as HTMLElement).getAttribute('data-confirm-add')!;
@@ -382,6 +371,34 @@ const profiloDati = profilo ? {
         if (!res.ok) {
           const result = await res.json();
           alert(result.error || 'Errore nell\'aggiunta del partecipante.');
+          return;
+        }
+
+        window.location.reload();
+      } catch {
+        alert('Errore di connessione. Riprova.');
+      }
+    });
+  });
+
+  // === Rimuovi partecipante da prenotazione ===
+  document.querySelectorAll('[data-remove-socio]').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      const socioId = (btn as HTMLElement).getAttribute('data-remove-socio')!;
+      const prenId = (btn as HTMLElement).getAttribute('data-prenotazione')!;
+
+      if (!confirm('Rimuovere questo partecipante dalla prenotazione?')) return;
+
+      try {
+        const res = await fetch('/api/prenotazioni-soci', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ prenotazione_id: prenId, socio_id: socioId }),
+        });
+
+        if (!res.ok) {
+          const result = await res.json();
+          alert(result.error || 'Errore nella rimozione del partecipante.');
           return;
         }
 
