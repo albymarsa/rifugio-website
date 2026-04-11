@@ -4,6 +4,62 @@ import type { APIRoute } from 'astro';
 import { getAuthenticatedClient, jsonError, jsonOk } from '../../../lib/auth';
 import { validateMemberRequired, validateMemberFieldLengths } from '../../../lib/member-validation';
 
+/** DELETE: Elimina un socio ordinario (solo fondatori) */
+export const DELETE: APIRoute = async ({ request, cookies }) => {
+  try {
+    const auth = await getAuthenticatedClient(cookies);
+    if ('error' in auth) return jsonError(auth.error, auth.status);
+
+    const { supabase, user } = auth;
+    const { socio_id } = await request.json();
+
+    if (!socio_id) {
+      return jsonError('Parametro socio_id mancante', 400);
+    }
+
+    // Verifica che l'utente sia un fondatore
+    const { data: fondatore } = await supabase
+      .from('soci')
+      .select('tipo_socio')
+      .eq('email', user.email)
+      .eq('tipo_socio', 'fondatore')
+      .single();
+
+    if (!fondatore) {
+      return jsonError('Non autorizzato', 403);
+    }
+
+    // Verifica che il socio da eliminare sia ordinario
+    const { data: socio } = await supabase
+      .from('soci')
+      .select('tipo_socio')
+      .eq('id', socio_id)
+      .single();
+
+    if (!socio) {
+      return jsonError('Socio non trovato', 404);
+    }
+
+    if (socio.tipo_socio === 'fondatore') {
+      return jsonError('Non è possibile eliminare un fondatore', 403);
+    }
+
+    const { error } = await supabase
+      .from('soci')
+      .delete()
+      .eq('id', socio_id);
+
+    if (error) {
+      console.error('[API soci] Errore delete:', error.message);
+      return jsonError('Errore nell\'eliminazione del socio', 500);
+    }
+
+    return jsonOk();
+  } catch {
+    return jsonError('Richiesta non valida', 400);
+  }
+};
+
 export const POST: APIRoute = async ({ request, cookies }) => {
   try {
     const auth = await getAuthenticatedClient(cookies);

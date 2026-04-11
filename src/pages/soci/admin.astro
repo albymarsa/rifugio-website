@@ -134,6 +134,34 @@ const { data: allMembers, error } = await supabase
       }
     });
   }
+
+  // === Elimina socio ===
+  document.querySelectorAll('[data-delete-socio]').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      const socioId = (btn as HTMLElement).getAttribute('data-delete-socio')!;
+      const nome = (btn as HTMLElement).getAttribute('data-delete-nome')!;
+
+      if (!confirm(`Eliminare il socio ${nome}? L'operazione è irreversibile e rimuoverà anche tutte le associazioni alle prenotazioni.`)) return;
+
+      try {
+        const res = await fetch('/api/soci', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ socio_id: socioId }),
+        });
+
+        if (!res.ok) {
+          const result = await res.json();
+          alert(result.error || 'Errore nell\'eliminazione del socio.');
+          return;
+        }
+
+        window.location.reload();
+      } catch {
+        alert('Errore di connessione. Riprova.');
+      }
+    });
+  });
 </script>
 
 <style>

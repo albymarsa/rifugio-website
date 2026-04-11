@@ -50,6 +50,7 @@ function formatDate(dateStr: string): string {
           <th>Telefono</th>
           <th>Tipo</th>
           <th>Data iscrizione</th>
+          <th></th>
         </tr>
       </thead>
       <tbody id="admin-table-body">
@@ -65,6 +66,13 @@ function formatDate(dateStr: string): string {
               </span>
             </td>
             <td>{formatDate(m.created_at)}</td>
+            <td>
+              {m.tipo_socio !== 'fondatore' && (
+                <button class="admin-table__delete-btn" data-delete-socio={m.id} data-delete-nome={`${m.nome} ${m.cognome}`}>
+                  Elimina
+                </button>
+              )}
+            </td>
           </tr>
         ))}
       </tbody>
@@ -85,6 +93,11 @@ function formatDate(dateStr: string): string {
           <span>{m.email}</span>
           {m.telefono && <span>{m.telefono}</span>}
           <span class="admin-mobile-card__date">Iscritto il {formatDate(m.created_at)}</span>
+          {m.tipo_socio !== 'fondatore' && (
+            <button class="admin-table__delete-btn" data-delete-socio={m.id} data-delete-nome={`${m.nome} ${m.cognome}`}>
+              Elimina
+            </button>
+          )}
         </div>
       </div>
     ))}
@@ -192,6 +205,25 @@ function formatDate(dateStr: string): string {
   .admin-table__badge--founder {
     background: #f0f7ec;
     color: var(--color-accent);
+  }
+
+  .admin-table__delete-btn {
+    background: none;
+    border: 1px solid #9b1c1c;
+    color: #9b1c1c;
+    padding: 0.3rem 0.8rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+    font-family: var(--font-main);
+    transition: background 0.2s, color 0.2s;
+  }
+
+  .admin-table__delete-btn:hover {
+    background: #9b1c1c;
+    color: var(--color-white);
   }
 
   .admin-table__empty {

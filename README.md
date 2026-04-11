@@ -87,6 +87,15 @@ CREATE POLICY "update_all_founders" ON soci FOR UPDATE
   USING (EXISTS (
     SELECT 1 FROM soci WHERE email = auth.jwt()->>'email' AND tipo_socio = 'fondatore'
   ));
+
+-- I fondatori possono eliminare soci ordinari
+CREATE POLICY "delete_founders" ON soci FOR DELETE
+  USING (
+    tipo_socio = 'ordinario'
+    AND EXISTS (
+      SELECT 1 FROM soci WHERE email = auth.jwt()->>'email' AND tipo_socio = 'fondatore'
+    )
+  );
 ```
 
 ### Passo 3: Crea la tabella dei profili utente
@@ -216,6 +225,17 @@ CREATE POLICY "select_own" ON prenotazioni_soci FOR SELECT
 -- I soci possono associare i propri membri del gruppo
 CREATE POLICY "insert_own" ON prenotazioni_soci FOR INSERT
   WITH CHECK (
+    aggiunto_da = auth.uid()
+    AND EXISTS (
+      SELECT 1 FROM soci
+      WHERE soci.id = prenotazioni_soci.socio_id
+      AND soci.registrato_da = auth.uid()
+    )
+  );
+
+-- I soci possono rimuovere i propri membri del gruppo dalle prenotazioni
+CREATE POLICY "delete_own" ON prenotazioni_soci FOR DELETE
+  USING (
     aggiunto_da = auth.uid()
     AND EXISTS (
       SELECT 1 FROM soci
