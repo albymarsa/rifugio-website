@@ -21,10 +21,12 @@
     "@astrojs/vercel": "^10.0.0",
     "@supabase/supabase-js": "^2.99.1",
     "astro": "^6.0.4",
+    "nodemailer": "^8.0.5",
     "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
   },
   "devDependencies": {
     "@playwright/test": "^1.48.0",
+    "@types/nodemailer": "^8.0.0",
     "vitest": "^2.1.0"
   }
 }

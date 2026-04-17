@@ -4,6 +4,7 @@ import type { APIRoute } from 'astro';
 import { createClient } from '@supabase/supabase-js';
 import { checkCsrf } from '../../lib/csrf';
 import { validateBookingDates } from '../../lib/booking';
+import { sendBookingNotification } from '../../lib/email';
 
 export const POST: APIRoute = async ({ request, cookies }) => {
   try {
@@ -103,6 +104,23 @@ export const POST: APIRoute = async ({ request, cookies }) => {
         status: 500,
         headers: { 'Content-Type': 'application/json' },
       });
+    }
+
+    // Notifica mail ai gestori. Il fallimento NON blocca la prenotazione.
+    try {
+      const mailResult = await sendBookingNotification({
+        richiedente_nome: `${profilo.nome} ${profilo.cognome}`,
+        richiedente_email: profilo.email,
+        richiedente_telefono: profilo.telefono || null,
+        data_arrivo,
+        data_partenza,
+        note: note || null,
+      });
+      if (!mailResult.ok) {
+        console.error('[API prenotazioni] Invio mail fallito:', mailResult.errorCode ?? 'UNKNOWN');
+      }
+    } catch (mailErr) {
+      console.error('[API prenotazioni] Eccezione invio mail (tipo):', mailErr instanceof Error ? mailErr.name : 'UNKNOWN');
     }
 
     return new Response(JSON.stringify({ success: true }), {
