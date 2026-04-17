@@ -67,6 +67,10 @@ export async function sendBookingNotification(
     return { ok: true };
   } catch (err) {
     const errorCode = (err as { code?: string })?.code ?? 'UNKNOWN';
+    // Diagnostica temporanea: logga il messaggio completo di Aruba per capire la causa di EAUTH
+    const errorMsg = (err as { message?: string })?.message ?? String(err);
+    const errorResponse = (err as { response?: string })?.response ?? '';
+    console.error('[EMAIL DEBUG] code=%s msg=%s response=%s', errorCode, errorMsg, errorResponse);
     return { ok: false, error: 'smtp_error', errorCode };
   }
 }
