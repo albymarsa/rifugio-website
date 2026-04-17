@@ -42,6 +42,9 @@ export async function sendBookingNotification(
       return { ok: false, error: 'smtp_not_configured', errorCode: 'MISSING_ENV' };
     }
 
+    // Diagnostica temporanea: verifica lunghezze per individuare whitespace invisibile
+    console.log('[EMAIL DEBUG] host=%s port=%d user.len=%d pass.len=%d', smtpHost, smtpPort, smtpUser.length, smtpPass.length);
+
     const transporter = nodemailer.createTransport({
       host: smtpHost,
       port: smtpPort,
