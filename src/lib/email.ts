@@ -42,9 +42,6 @@ export async function sendBookingNotification(
       return { ok: false, error: 'smtp_not_configured', errorCode: 'MISSING_ENV' };
     }
 
-    // Diagnostica temporanea: verifica lunghezze per individuare whitespace invisibile
-    console.log('[EMAIL DEBUG] host=%s port=%d user.len=%d pass.len=%d', smtpHost, smtpPort, smtpUser.length, smtpPass.length);
-
     const transporter = nodemailer.createTransport({
       host: smtpHost,
       port: smtpPort,
@@ -70,10 +67,6 @@ export async function sendBookingNotification(
     return { ok: true };
   } catch (err) {
     const errorCode = (err as { code?: string })?.code ?? 'UNKNOWN';
-    // Diagnostica temporanea: logga il messaggio completo di Aruba per capire la causa di EAUTH
-    const errorMsg = (err as { message?: string })?.message ?? String(err);
-    const errorResponse = (err as { response?: string })?.response ?? '';
-    console.error('[EMAIL DEBUG] code=%s msg=%s response=%s', errorCode, errorMsg, errorResponse);
     return { ok: false, error: 'smtp_error', errorCode };
   }
 }
