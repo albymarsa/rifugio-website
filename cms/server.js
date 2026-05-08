@@ -62,16 +62,26 @@ app.delete('/api/images/:filename', (req, res) => {
   }
 });
 
-// Deploy su Vercel
+// Pubblica contenuti via git: commit + push.
+// Vercel deploya automaticamente al push su main, quindi niente più
+// "vercel --prod" diretto che bypassava git e rendeva le pubblicazioni
+// effimere (sovrascritte al prossimo push di codice).
 app.post('/api/deploy', (_req, res) => {
   res.writeHead(200, { 'Content-Type': 'text/plain; charset=utf-8', 'Transfer-Encoding': 'chunked' });
-  res.write('Avvio deploy su Vercel...\n');
+  res.write('Pubblicazione contenuti via git...\n');
 
-  const child = exec('npx vercel --prod', { cwd: ROOT });
+  const cmd =
+    'git add src/data/content.json public/images && ' +
+    "(git diff --cached --quiet && echo 'Nessuna modifica da pubblicare.' || " +
+    "(git commit -m 'Aggiorna contenuti dal CMS' && git push))";
+
+  const child = exec(cmd, { cwd: ROOT });
   child.stdout?.on('data', d => res.write(d));
   child.stderr?.on('data', d => res.write(d));
   child.on('close', code => {
-    res.write(code === 0 ? '\n✅ Deploy completato!' : '\n❌ Errore nel deploy');
+    res.write(code === 0
+      ? '\n✅ Pubblicato! Vercel rebuildera in ~30-60s.'
+      : '\n❌ Errore nella pubblicazione. Controlla il terminale del CMS.');
     res.end();
   });
 });
