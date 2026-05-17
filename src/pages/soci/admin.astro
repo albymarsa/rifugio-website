@@ -30,8 +30,22 @@ if (accessToken && refreshToken) {
 // Carica solo i campi necessari per la visualizzazione (NO PII sensibili come CF, documento)
 const { data: allMembers, error } = await supabase
   .from('soci')
-  .select('id, nome, cognome, email, telefono, tipo_socio, created_at')
+  .select('id, nome, cognome, email, telefono, tipo_socio, created_at, registrato_da')
   .order('cognome');
+
+// Carica i profili dei referenti (chi ha registrato ogni socio)
+const referenteIds = [...new Set((allMembers || []).map((m: any) => m.registrato_da).filter(Boolean))];
+const { data: referenti } = referenteIds.length
+  ? await supabase.from('profili').select('id, nome, cognome').in('id', referenteIds)
+  : { data: [] };
+
+const referenteMap = new Map<string, { nome: string; cognome: string }>();
+(referenti || []).forEach((r: any) => referenteMap.set(r.id, { nome: r.nome, cognome: r.cognome }));
+
+const membersWithReferente = (allMembers || []).map((m: any) => ({
+  ...m,
+  referente: m.registrato_da ? referenteMap.get(m.registrato_da) ?? null : null,
+}));
 ---
 
 <SociLayout title="Gestione Soci">
@@ -69,7 +83,7 @@ const { data: allMembers, error } = await supabase
       </div>
     )}
 
-    {allMembers && <AdminTable members={allMembers} />}
+    {allMembers && <AdminTable members={membersWithReferente} />}
   </div>
 </SociLayout>
 
@@ -113,6 +127,7 @@ const { data: allMembers, error } = await supabase
           'Numero Documento': s.numero_documento || '',
           'Tipo Socio': s.tipo_socio || '',
           'Data Iscrizione': s.created_at ? new Date(s.created_at).toLocaleDateString('it-IT') : '',
+          'Referente Gruppo': s.referente_gruppo || '',
         }));
 
         const ws = XLSX.utils.json_to_sheet(rows);

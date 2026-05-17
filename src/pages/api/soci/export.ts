@@ -39,7 +39,20 @@ export const GET: APIRoute = async ({ cookies, url }) => {
       ? (soci || []).filter((s: any) => new Date(s.created_at).getFullYear() === parseInt(year))
       : soci || [];
 
-    return new Response(JSON.stringify(filtered), {
+    const referenteIds = [...new Set(filtered.map((s: any) => s.registrato_da).filter(Boolean))];
+    const { data: referenti } = referenteIds.length
+      ? await supabase.from('profili').select('id, nome, cognome').in('id', referenteIds)
+      : { data: [] };
+
+    const referenteMap = new Map<string, { nome: string; cognome: string }>();
+    (referenti || []).forEach((r: any) => referenteMap.set(r.id, { nome: r.nome, cognome: r.cognome }));
+
+    const enriched = filtered.map((s: any) => {
+      const ref = s.registrato_da ? referenteMap.get(s.registrato_da) : null;
+      return { ...s, referente_gruppo: ref ? `${ref.cognome} ${ref.nome}` : '' };
+    });
+
+    return new Response(JSON.stringify(enriched), {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
     });

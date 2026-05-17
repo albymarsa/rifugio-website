@@ -7,6 +7,7 @@ interface Member {
   telefono?: string;
   tipo_socio: string;
   created_at: string;
+  referente?: { nome: string; cognome: string } | null;
 }
 
 interface Props {
@@ -50,6 +51,7 @@ function formatDate(dateStr: string): string {
           <th>Telefono</th>
           <th>Tipo</th>
           <th>Data iscrizione</th>
+          <th>Referente gruppo</th>
           <th></th>
         </tr>
       </thead>
@@ -66,6 +68,7 @@ function formatDate(dateStr: string): string {
               </span>
             </td>
             <td>{formatDate(m.created_at)}</td>
+            <td>{m.referente ? `${m.referente.cognome} ${m.referente.nome}` : '—'}</td>
             <td>
               {m.tipo_socio !== 'fondatore' && (
                 <button class="admin-table__delete-btn" data-delete-socio={m.id} data-delete-nome={`${m.nome} ${m.cognome}`}>
@@ -93,6 +96,9 @@ function formatDate(dateStr: string): string {
           <span>{m.email}</span>
           {m.telefono && <span>{m.telefono}</span>}
           <span class="admin-mobile-card__date">Iscritto il {formatDate(m.created_at)}</span>
+          <span class="admin-mobile-card__referente">
+            Referente: {m.referente ? `${m.referente.cognome} ${m.referente.nome}` : '—'}
+          </span>
           {m.tipo_socio !== 'fondatore' && (
             <button class="admin-table__delete-btn" data-delete-socio={m.id} data-delete-nome={`${m.nome} ${m.cognome}`}>
               Elimina
@@ -265,6 +271,11 @@ function formatDate(dateStr: string): string {
 
   .admin-mobile-card__date {
     margin-top: 0.3rem;
+    font-size: 0.8rem;
+    color: var(--color-gray-light);
+  }
+
+  .admin-mobile-card__referente {
     font-size: 0.8rem;
     color: var(--color-gray-light);
   }
