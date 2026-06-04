@@ -33,8 +33,10 @@ Config: `vitest.config.ts` — environment `node`, include `tests/unit/**/*.test
 | `tests/unit/booking-validation.test.ts` | `validateBookingDates(arrivo, partenza, note)` + `isClosedDate(dateStr)` | `src/lib/booking.ts` |
 | `tests/unit/booking-overlap.test.ts` | `findOverlap(existing, arrivo, partenza)` | `src/lib/booking.ts` |
 | `tests/unit/availability.test.ts` | `aggregateOccupancy(bookings, anno, mese)` | `src/lib/booking.ts` |
+| `tests/unit/member-validation.test.ts` | `validateMemberRequired` + `validateMemberFieldLengths` | `src/lib/member-validation.ts` |
+| `tests/unit/member-ownership.test.ts` | `canEditMember(target, userId)` | `src/lib/member-ownership.ts` |
 
-**Regola:** qualsiasi logica aggiunta a `src/pages/api/prenotazioni.ts` o `src/pages/api/disponibilita.ts` va prima estratta in `src/lib/booking.ts` o `src/lib/csrf.ts` (funzioni pure, senza import Astro), poi testata in `tests/unit/`.
+**Regola:** qualsiasi logica aggiunta agli endpoint API (`prenotazioni.ts`, `disponibilita.ts`, `soci/index.ts`, …) va prima estratta in una funzione pura in `src/lib/` (`booking.ts`, `csrf.ts`, `member-validation.ts`, `member-ownership.ts`, senza import Astro), poi testata in `tests/unit/`.
 
 ### Playwright — smoke E2E read-only
 
@@ -47,7 +49,7 @@ Config: `playwright.config.ts` — `webServer: npm run dev`, baseURL `http://loc
 
 | File spec | Cosa copre |
 |---|---|
-| `tests/e2e/api.spec.ts` | `/api/disponibilita` shape e validazione; CSRF 403 su `/api/prenotazioni`; 401 senza cookie |
+| `tests/e2e/api.spec.ts` | `/api/disponibilita` shape e validazione; CSRF 403 su `/api/prenotazioni`; CSRF 403 + 401 senza cookie su POST/PUT/DELETE `/api/soci` |
 | `tests/e2e/home.spec.ts` | Home, login, privacy renderizzano; `/soci/` redirige al login |
 | `tests/e2e/content-binding.spec.ts` | Hero title/subtitle/CTA e InfoSection title/paragrafo corrispondono a `src/data/content.json` |
 
@@ -62,7 +64,10 @@ Config: `playwright.config.ts` — `webServer: npm run dev`, baseURL `http://loc
 - `new URL(origin).host !== host`
 - `origin` non è un URL valido
 
-Applicato **solo** su `POST /api/prenotazioni`. Gli altri endpoint POST non hanno CSRF — lacuna nota.
+Applicato su `POST /api/prenotazioni` e su tutte le mutazioni soci (`POST/PUT/DELETE /api/soci`). Gli altri endpoint POST (es. `prenotazioni-soci`, `account/*`) non hanno ancora CSRF — lacuna nota.
+
+### Modifica socio (`src/lib/member-ownership.ts::canEditMember`)
+`PUT /api/soci` permette al referente di modificare i soci del proprio gruppo. `canEditMember(target, userId)` ritorna `{ ok: false }` se: `userId` mancante, `target.tipo_socio === 'fondatore'`, oppure `target.registrato_da !== userId`. L'handler verifica prima l'esistenza (404), poi l'ownership (403), poi valida e fa una whitelist dei campi anagrafici (mai `id`/`registrato_da`/`tipo_socio` dal body). **Dipendenza non testabile in CI:** serve una policy RLS di UPDATE su `soci` (Supabase) `using/with check (registrato_da = auth.uid() and tipo_socio <> 'fondatore')`, altrimenti l'update è rifiutato dal DB.
 
 ### Stagione (`src/lib/booking.ts::isClosedDate`)
 Il rifugio è aperto **giugno–ottobre** (mesi 6–10 inclusi). `isClosedDate` ritorna `true` per novembre–maggio. `validateBookingDates` usa la data dell'ultima notte (= partenza − 1 giorno) per il check di stagione, così un check-out il 1 novembre con ultima notte il 31 ottobre è valido.
@@ -100,7 +105,8 @@ Gli hook funzionano solo dentro una sessione Claude Code attiva su questa macchi
 2. **GDPR** — `/api/account/data` e `/api/account/delete` non coperti.
 3. **Admin/founder panel** — `/soci/admin`, `/soci/prenotazioni` non coperti.
 4. **Partecipanti** — `prenotazioni-soci`, `prenotazioni-partecipanti` non coperti.
-5. **CSRF sugli altri endpoint POST** — solo `prenotazioni.ts` ha il controllo.
+5. **CSRF sugli altri endpoint POST** — coperti `prenotazioni.ts` e `soci/index.ts`; mancano ancora `prenotazioni-soci`, `account/*`.
+7. **Write path UPDATE socio** — il PUT autenticato (update riuscito, 409 email duplicata, 400 post-auth) non è coperto: l'e2e è read-only e manca l'auth flow (dipende dal gap #1).
 6. **CMS Express** (`cms/`) — non testato.
 
 ---
