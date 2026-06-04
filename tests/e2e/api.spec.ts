@@ -54,3 +54,42 @@ test.describe('/api/prenotazioni CSRF & auth', () => {
     expect(res.status()).toBe(401);
   });
 });
+
+test.describe('/api/soci CSRF & auth', () => {
+  const sampleMember = {
+    id: '00000000-0000-0000-0000-000000000000',
+    nome: 'Test',
+    cognome: 'Test',
+    email: 'test@example.com',
+  };
+
+  for (const method of ['POST', 'PUT', 'DELETE'] as const) {
+    test(`${method} rejects request without origin header (CSRF)`, async ({ request, baseURL }) => {
+      const res = await request.fetch('/api/soci', {
+        method,
+        data: sampleMember,
+        headers: { host: new URL(baseURL!).host },
+      });
+      expect(res.status()).toBe(403);
+    });
+
+    test(`${method} rejects request with mismatched origin (CSRF)`, async ({ request }) => {
+      const res = await request.fetch('/api/soci', {
+        method,
+        data: sampleMember,
+        headers: { origin: 'https://attacker.example.com' },
+      });
+      expect(res.status()).toBe(403);
+    });
+
+    test(`${method} rejects request without cookies (401)`, async ({ request, baseURL }) => {
+      const res = await request.fetch('/api/soci', {
+        method,
+        data: sampleMember,
+        headers: { origin: new URL(baseURL!).origin },
+      });
+      // CSRF passes (origin matches), auth check fails before any DB write
+      expect(res.status()).toBe(401);
+    });
+  }
+});

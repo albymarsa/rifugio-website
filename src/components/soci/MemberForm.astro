@@ -18,6 +18,7 @@ interface Props {
   formId?: string;
   submitLabel?: string;
   showCancel?: boolean;
+  showConsent?: boolean;
 }
 
 const {
@@ -25,6 +26,7 @@ const {
   formId = 'member-form',
   submitLabel = 'Salva dati',
   showCancel = false,
+  showConsent = true,
 } = Astro.props;
 ---
 
@@ -90,14 +92,16 @@ const {
     </div>
   </div>
 
-  <div class="form-group form-group--checkbox">
-    <label class="checkbox-label">
-      <input type="checkbox" name="privacy_consent" required />
-      <span>
-        Ho letto e acconsento al trattamento dei dati personali ai sensi dell'<a href="/privacy" target="_blank">informativa sulla privacy</a>. *
-      </span>
-    </label>
-  </div>
+  {showConsent && (
+    <div class="form-group form-group--checkbox">
+      <label class="checkbox-label">
+        <input type="checkbox" name="privacy_consent" required />
+        <span>
+          Ho letto e acconsento al trattamento dei dati personali ai sensi dell'<a href="/privacy" target="_blank">informativa sulla privacy</a>. *
+        </span>
+      </label>
+    </div>
+  )}
 
   <div class="member-form__actions">
     <button type="submit" class="btn btn-primary member-form__submit">

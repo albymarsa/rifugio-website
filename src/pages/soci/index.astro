@@ -178,8 +178,20 @@ const profiloDati = profilo ? {
           {members.map((member) => (
             <div class="member-wrapper" data-member-id={member.id}>
               <div class="member-view">
-                <MemberCard member={member} />
+                <MemberCard member={member} showEdit={member.tipo_socio !== 'fondatore'} />
               </div>
+              {member.tipo_socio !== 'fondatore' && (
+                <div class="member-edit" hidden>
+                  <h2 class="dashboard__subtitle">Modifica socio</h2>
+                  <MemberForm
+                    formId={`edit-member-form-${member.id}`}
+                    member={member}
+                    submitLabel="Salva modifiche"
+                    showCancel={true}
+                    showConsent={false}
+                  />
+                </div>
+              )}
             </div>
           ))}
         </div>
@@ -345,10 +357,83 @@ const profiloDati = profilo ? {
     }
   });
 
-  // === Modifica socio ===
+  // === Modifica socio: apri il form inline ===
   document.querySelectorAll('[data-edit]').forEach((btn) => {
     btn.addEventListener('click', () => {
-      alert('Funzionalita\' di modifica in arrivo. Per ora contatta un fondatore per modifiche.');
+      const id = (btn as HTMLElement).getAttribute('data-edit');
+      const wrapper = document.querySelector(`.member-wrapper[data-member-id="${id}"]`);
+      if (!wrapper) return;
+      (wrapper.querySelector('.member-view') as HTMLElement).hidden = true;
+      (wrapper.querySelector('.member-edit') as HTMLElement).hidden = false;
+    });
+  });
+
+  // === Modifica socio: annulla e submit ===
+  document.querySelectorAll('form[id^="edit-member-form-"]').forEach((el) => {
+    const form = el as HTMLFormElement;
+    const wrapper = form.closest('.member-wrapper') as HTMLElement;
+
+    const closeEdit = () => {
+      (wrapper.querySelector('.member-edit') as HTMLElement).hidden = true;
+      (wrapper.querySelector('.member-view') as HTMLElement).hidden = false;
+    };
+
+    form.querySelector('[data-cancel]')?.addEventListener('click', closeEdit);
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+      }
+
+      const submitBtn = form.querySelector('button[type="submit"]') as HTMLButtonElement;
+      const originalLabel = submitBtn.textContent;
+      submitBtn.textContent = 'Salvataggio...';
+      submitBtn.disabled = true;
+
+      const fd = new FormData(form);
+      const msgEl = form.querySelector('[data-message]') as HTMLElement;
+
+      try {
+        const res = await fetch('/api/soci', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            id: fd.get('id'),
+            nome: fd.get('nome'),
+            cognome: fd.get('cognome'),
+            email: fd.get('email'),
+            telefono: fd.get('telefono') || null,
+            data_nascita: fd.get('data_nascita') || null,
+            luogo_nascita: fd.get('luogo_nascita') || null,
+            codice_fiscale: fd.get('codice_fiscale') || null,
+            indirizzo_residenza: fd.get('indirizzo_residenza') || null,
+            tipo_documento: fd.get('tipo_documento') || null,
+            numero_documento: fd.get('numero_documento') || null,
+          }),
+        });
+
+        const result = await res.json();
+
+        if (!res.ok) {
+          msgEl.textContent = result.error || 'Errore nella modifica.';
+          msgEl.setAttribute('data-type', 'error');
+          msgEl.hidden = false;
+          submitBtn.textContent = originalLabel;
+          submitBtn.disabled = false;
+          return;
+        }
+
+        window.location.reload();
+      } catch {
+        msgEl.textContent = 'Errore di connessione. Riprova.';
+        msgEl.setAttribute('data-type', 'error');
+        msgEl.hidden = false;
+        submitBtn.textContent = originalLabel;
+        submitBtn.disabled = false;
+      }
     });
   });
 
