@@ -64,7 +64,10 @@ Pannello: `admin.aruba.it` → Domini → rifugiorosmini.it → Gestione DNS
 - **Webmail**: `webmail.aruba.it`
 
 ### Integrazione con Gmail (opzionale)
-È possibile leggere/inviare `info@rifugiorosmini.it` da Gmail tramite "Aggiungi un altro indirizzo email" nelle impostazioni Gmail, usando i server SMTP/IMAP di Aruba.
+- **POP3 non funziona**: Aruba nega l'accesso remoto POP3 (`pop3.aruba.it:995`) — Gmail restituisce "Server denied POP3 access"
+- **Soluzione adottata per la ricezione**: inoltro automatico da Aruba verso Gmail
+  - Pannello Aruba → Caselle → info → tab **"Inoltro e risposta automatica"**
+- **Per l'invio** come `info@rifugiorosmini.it` da Gmail: impostazioni Gmail → "Aggiungi un altro indirizzo email" → SMTP `smtp.aruba.it:465` (SSL)
 
 ---
 
@@ -108,6 +111,21 @@ Tag OG aggiunti in **`src/layouts/Layout.astro`** (commit `caa40f1`).
 - Tempi tipici: **1-2 minuti** dopo il push
 - Dashboard: `vercel.com/dashboard` → progetto `rifugio-website`
 - Per rollback: Vercel → Deployments → trovare il deploy precedente → "Promote to Production"
+- **Pubblicazione dal CMS** (`cms/server.js`, endpoint `/api/deploy`): fa `git add` content.json+images → `git commit` (solo se ci sono modifiche staged) → `git pull --rebase origin main` → `git push` (**sempre**, anche senza nuove modifiche). Vercel ridispiega automaticamente.
+
+### Failure mode: push CMS rifiutato (`non-fast-forward`)
+- **Sintomo**: nel terminale del CMS appare `! [rejected] main -> main (non-fast-forward)` / `Updates were rejected because the tip of your current branch is behind`.
+- **Causa**: il remoto ha commit che il locale non ha (es. push da un'altra postazione, come modifiche al pannello soci). Storicamente il CMS faceva solo `commit && push` senza `pull`, quindi ogni divergenza bloccava le pubblicazioni successive.
+- **Fix una tantum**: `git pull --rebase origin main` (riallinea, di solito nessun conflitto perché il CMS tocca solo `src/data/content.json`/`public/images`), poi `git push`.
+- **Fix permanente** (commit `9dc6f20`, 2026-06-10): il deploy ora committa solo se ci sono modifiche staged ma esegue **sempre** `git pull --rebase origin main && git push`.
+
+### Failure mode: commit pendente non pushato → falso "Pubblicato!"
+- **Sintomo**: il CMS mostra `Nessuna modifica da pubblicare.` + `✅ Pubblicato!` ma il sito **non si aggiorna**. Il branch locale risulta `ahead` di `origin/main` (`git status -sb`).
+- **Causa**: una modifica era stata committata in locale ma il push non era arrivato (es. push precedente fallito). La vecchia logica del deploy faceva `commit && pull && push` **solo** se trovava nuove modifiche staged; col contenuto già committato, il ramo "Nessuna modifica" cortocircuitava e non ripushava mai il commit pendente.
+- **Diagnosi**: `git rev-list --left-right --count origin/main...HEAD` (terzo numero > 0 = commit locali non pushati); `git log origin/main..HEAD --oneline`.
+- **Fix una tantum**: `git push origin main`.
+- **Fix permanente**: lo stesso commit `9dc6f20` (pull+push eseguiti sempre) recupera automaticamente i commit pendenti alla pubblicazione successiva.
+- **Nota**: dopo aver aggiornato `cms/server.js`, **riavviare il processo del CMS** perché il nuovo comportamento abbia effetto.
 
 ---
 
