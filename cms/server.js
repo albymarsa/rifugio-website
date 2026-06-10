@@ -70,10 +70,15 @@ app.post('/api/deploy', (_req, res) => {
   res.writeHead(200, { 'Content-Type': 'text/plain; charset=utf-8', 'Transfer-Encoding': 'chunked' });
   res.write('Pubblicazione contenuti via git...\n');
 
+  // Committa solo se ci sono modifiche staged, ma fai SEMPRE pull+push:
+  // cosi' vengono spinti anche eventuali commit gia' fatti ma non ancora
+  // pushati (es. un push precedente fallito), che altrimenti resterebbero
+  // indietro mostrando un falso "Nessuna modifica / Pubblicato".
   const cmd =
     'git add src/data/content.json public/images && ' +
-    "(git diff --cached --quiet && echo 'Nessuna modifica da pubblicare.' || " +
-    "(git commit -m 'Aggiorna contenuti dal CMS' && git push))";
+    "(git diff --cached --quiet && echo 'Nessuna nuova modifica da committare.' || " +
+    "git commit -m 'Aggiorna contenuti dal CMS') && " +
+    'git pull --rebase origin main && git push';
 
   const child = exec(cmd, { cwd: ROOT });
   child.stdout?.on('data', d => res.write(d));
