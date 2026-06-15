@@ -48,12 +48,29 @@ test.describe('Content binding (CMS → home)', () => {
 
   test('footer Facebook link href matches content.json', async ({ page }) => {
     await page.goto('/');
-    await expect(page.locator('.footer__social')).toHaveAttribute('href', content.footer.facebook_url);
+    await expect(
+      page.locator('.footer__social[aria-label="Facebook"]')
+    ).toHaveAttribute('href', content.footer.facebook_url);
   });
 
   test('footer Facebook link has target="_blank" and rel noopener', async ({ page }) => {
     await page.goto('/');
-    const link = page.locator('.footer__social');
+    const link = page.locator('.footer__social[aria-label="Facebook"]');
+    await expect(link).toHaveAttribute('target', '_blank');
+    const rel = await link.getAttribute('rel');
+    expect(rel).toContain('noopener');
+  });
+
+  test('footer Instagram link href matches content.json', async ({ page }) => {
+    await page.goto('/');
+    await expect(
+      page.locator('.footer__social[aria-label="Instagram"]')
+    ).toHaveAttribute('href', content.footer.instagram_url);
+  });
+
+  test('footer Instagram link has target="_blank" and rel noopener', async ({ page }) => {
+    await page.goto('/');
+    const link = page.locator('.footer__social[aria-label="Instagram"]');
     await expect(link).toHaveAttribute('target', '_blank');
     const rel = await link.getAttribute('rel');
     expect(rel).toContain('noopener');
