@@ -93,7 +93,8 @@ Artifact: `playwright-report/` uploadato solo se fallisce
 ## Hook Claude Code (`.claude/settings.json`)
 
 - **PostToolUse Write|Edit** su file in `src/`: esegue `npm run test:unit`. Se fallisce, esce con codice 2 e riporta l'output a Claude nella stessa risposta.
-- **PostToolUse Bash** su comandi `git push`: esegue `gh run watch --exit-status` per aspettare il risultato CI e riportarlo.
+- **PostToolUse Bash** su comandi `git push`: ricava l'ID dell'ultimo run CI per il commit appena pushato (`gh run list --branch <branch> --commit <sha>`, con retry finché il run compare), poi `gh run watch <id> --exit-status --compact`. Riporta l'esito a Claude (exit 2 se la CI fallisce). **Filtra internamente** su `.tool_input.command` (via `jq`) perché in questa versione di Claude Code il campo `if` dello schema **non viene applicato**: senza il guard l'hook scatterebbe su *ogni* comando Bash.
+  - **Nota storica (fix 2026-06-19):** la versione precedente eseguiva `gh run watch --exit-status` **senza ID** → falliva sempre in modalità non interattiva con `run ID required when not running interactively`, generando falsi "CI run FAILED" su qualunque comando Bash.
 
 Gli hook funzionano solo dentro una sessione Claude Code attiva su questa macchina.
 

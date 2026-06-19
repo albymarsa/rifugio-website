@@ -107,7 +107,8 @@ Tag OG aggiunti in **`src/layouts/Layout.astro`** (commit `caa40f1`).
 
 ## Deploy
 
-- **Auto-deploy** Vercel su push a `main` (no GitHub Actions custom)
+- **Auto-deploy** Vercel su push a `main`: il deploy è nativo Vercel, **non** passa da GitHub Actions
+- ⚠️ **CI ≠ deploy**: esiste comunque un workflow GitHub Actions (`.github/workflows/test.yml`) che gira su ogni push, ma serve solo a lanciare i test e **non blocca** il deploy Vercel. Quindi una CI rossa **non** impedisce la pubblicazione del sito: Vercel ridispiega comunque. (Un hook locale di Claude Code controlla la CI dopo il `git push` — vedi `test-engineer.md`.)
 - Tempi tipici: **1-2 minuti** dopo il push
 - Dashboard: `vercel.com/dashboard` → progetto `rifugio-website`
 - Per rollback: Vercel → Deployments → trovare il deploy precedente → "Promote to Production"
