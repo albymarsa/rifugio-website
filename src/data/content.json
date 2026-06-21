@@ -68,10 +68,6 @@
         "alt": "Alpe Veglia"
       },
       {
-        "src": "/images/AlpeVeglia_220226_29.jpg",
-        "alt": "Alpe Veglia"
-      },
-      {
         "src": "/images/Veglia_Lele_19lug24_7.JPG",
         "alt": "Alpe Veglia"
       },
@@ -94,6 +90,11 @@
       {
         "src": "/images/alpeveglia_08_2011 1111.jpg",
         "alt": "Alpe Veglia"
+      },
+      {
+        "src": "/images/IMG_20260606_193401.png",
+        "alt": "Alpe Veglia",
+        "large": false
       }
     ]
   },
