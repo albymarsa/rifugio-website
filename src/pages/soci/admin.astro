@@ -30,7 +30,7 @@ if (accessToken && refreshToken) {
 // Carica solo i campi necessari per la visualizzazione (NO PII sensibili come CF, documento)
 const { data: allMembers, error } = await supabase
   .from('soci')
-  .select('id, nome, cognome, email, telefono, tipo_socio, created_at, registrato_da')
+  .select('id, numero_socio, nome, cognome, email, telefono, tipo_socio, created_at, registrato_da')
   .order('cognome');
 
 // Carica i profili dei referenti (chi ha registrato ogni socio)
@@ -115,6 +115,7 @@ const membersWithReferente = (allMembers || []).map((m: any) => ({
         }
 
         const rows = filtered.map((s: any) => ({
+          'N. Socio': s.numero_socio ?? '',
           'Cognome': s.cognome || '',
           'Nome': s.nome || '',
           'Email': s.email || '',
@@ -127,6 +128,8 @@ const membersWithReferente = (allMembers || []).map((m: any) => ({
           'Numero Documento': s.numero_documento || '',
           'Tipo Socio': s.tipo_socio || '',
           'Data Iscrizione': s.created_at ? new Date(s.created_at).toLocaleDateString('it-IT') : '',
+          'Statuto Accettato Il': s.statuto_accettato_il ? new Date(s.statuto_accettato_il).toLocaleString('it-IT') : '',
+          'Regolamento Accettato Il': s.regolamento_accettato_il ? new Date(s.regolamento_accettato_il).toLocaleString('it-IT') : '',
           'Referente Gruppo': s.referente_gruppo || '',
         }));
 

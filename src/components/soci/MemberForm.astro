@@ -93,14 +93,34 @@ const {
   </div>
 
   {showConsent && (
-    <div class="form-group form-group--checkbox">
-      <label class="checkbox-label">
-        <input type="checkbox" name="privacy_consent" required />
-        <span>
-          Ho letto e acconsento al trattamento dei dati personali ai sensi dell'<a href="/privacy" target="_blank">informativa sulla privacy</a>. *
-        </span>
-      </label>
-    </div>
+    <>
+      <div class="form-group form-group--checkbox">
+        <label class="checkbox-label">
+          <input type="checkbox" name="privacy_consent" required />
+          <span>
+            Ho letto e acconsento al trattamento dei dati personali ai sensi dell'<a href="/privacy" target="_blank">informativa sulla privacy</a>. *
+          </span>
+        </label>
+      </div>
+
+      <div class="form-group form-group--checkbox">
+        <label class="checkbox-label">
+          <input type="checkbox" name="regolamento_consent" required />
+          <span>
+            Ho letto e accetto il <a href="/regolamento" target="_blank">regolamento del rifugio</a>. *
+          </span>
+        </label>
+      </div>
+
+      <div class="form-group form-group--checkbox">
+        <label class="checkbox-label">
+          <input type="checkbox" name="statuto_consent" required />
+          <span>
+            Ho letto e accetto lo <a href="/statuto" target="_blank">statuto dell'associazione</a>. *
+          </span>
+        </label>
+      </div>
+    </>
   )}
 
   <div class="member-form__actions">

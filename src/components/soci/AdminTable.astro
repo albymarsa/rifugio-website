@@ -1,6 +1,7 @@
 ---
 interface Member {
   id: string;
+  numero_socio?: number | null;
   nome: string;
   cognome: string;
   email: string;
@@ -45,6 +46,7 @@ function formatDate(dateStr: string): string {
     <table class="admin-table">
       <thead>
         <tr>
+          <th>N.</th>
           <th>Cognome</th>
           <th>Nome</th>
           <th>Email</th>
@@ -58,6 +60,7 @@ function formatDate(dateStr: string): string {
       <tbody id="admin-table-body">
         {members.map((m) => (
           <tr data-search={`${m.cognome} ${m.nome} ${m.email}`.toLowerCase()} data-id={m.id}>
+            <td>{m.numero_socio ?? '—'}</td>
             <td>{m.cognome}</td>
             <td>{m.nome}</td>
             <td>{m.email}</td>
@@ -87,7 +90,7 @@ function formatDate(dateStr: string): string {
     {members.map((m) => (
       <div class="admin-mobile-card" data-search={`${m.cognome} ${m.nome} ${m.email}`.toLowerCase()} data-id={m.id}>
         <div class="admin-mobile-card__header">
-          <strong>{m.cognome} {m.nome}</strong>
+          <strong>{m.numero_socio != null && `N. ${m.numero_socio} · `}{m.cognome} {m.nome}</strong>
           <span class:list={['admin-table__badge', { 'admin-table__badge--founder': m.tipo_socio === 'fondatore' }]}>
             {m.tipo_socio === 'fondatore' ? 'Fondatore' : 'Ordinario'}
           </span>

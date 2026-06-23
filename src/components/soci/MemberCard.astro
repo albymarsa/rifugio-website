@@ -2,6 +2,7 @@
 interface Props {
   member: {
     id: string;
+    numero_socio?: number | null;
     nome: string;
     cognome: string;
     email: string;
@@ -44,9 +45,14 @@ function formatDate(dateStr?: string): string {
   <div class="member-card__header">
     <div>
       <h3 class="member-card__name">{member.nome} {member.cognome}</h3>
-      <span class="member-card__badge">
-        {member.tipo_socio === 'fondatore' ? 'Socio fondatore' : 'Socio ordinario'}
-      </span>
+      <div class="member-card__tags">
+        {member.numero_socio != null && (
+          <span class="member-card__number">Socio n. {member.numero_socio}</span>
+        )}
+        <span class="member-card__badge">
+          {member.tipo_socio === 'fondatore' ? 'Socio fondatore' : 'Socio ordinario'}
+        </span>
+      </div>
     </div>
     {showEdit && (
       <button class="btn btn-outline member-card__edit" data-edit={member.id}>
@@ -122,6 +128,24 @@ function formatDate(dateStr?: string): string {
   .member-card__name {
     font-size: 1.2rem;
     margin-bottom: 0.3rem;
+  }
+
+  .member-card__tags {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .member-card__number {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--color-dark);
+    background: var(--color-off-white);
+    padding: 0.2rem 0.6rem;
   }
 
   .member-card__badge {

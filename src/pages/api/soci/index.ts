@@ -2,7 +2,7 @@ export const prerender = false;
 
 import type { APIRoute } from 'astro';
 import { getAuthenticatedClient, jsonError, jsonOk } from '../../../lib/auth';
-import { validateMemberRequired, validateMemberFieldLengths } from '../../../lib/member-validation';
+import { validateMemberRequired, validateMemberFieldLengths, validateConsents } from '../../../lib/member-validation';
 import { canEditMember } from '../../../lib/member-ownership';
 import { checkCsrf } from '../../../lib/csrf';
 
@@ -88,6 +88,12 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     const { supabase, user } = auth;
     const body = await request.json();
 
+    // Accettazione obbligatoria di statuto e regolamento (controllo server-side,
+    // non ci si fida della sola validazione client). Il timestamp registra il "quando".
+    const consentCheck = validateConsents(body.regolamento_consent, body.statuto_consent);
+    if (!consentCheck.ok) return jsonError(consentCheck.error, 400);
+    const consentTimestamp = new Date().toISOString();
+
     const memberData = {
       nome: body.nome,
       cognome: body.cognome,
@@ -101,6 +107,8 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       numero_documento: body.numero_documento || null,
       registrato_da: user.id,
       tipo_socio: 'ordinario',
+      statuto_accettato_il: consentTimestamp,
+      regolamento_accettato_il: consentTimestamp,
     };
 
     const requiredCheck = validateMemberRequired(memberData.nome, memberData.cognome, memberData.email);

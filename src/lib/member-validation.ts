@@ -33,3 +33,18 @@ export function validateMemberFieldLengths(
   }
   return { ok: true };
 }
+
+/**
+ * Verifica l'accettazione obbligatoria di statuto e regolamento all'iscrizione socio.
+ * Uguaglianza stretta a `true`: valori truthy ma non booleani (es. 'on', 1) sono rifiutati,
+ * per blindare il contratto con il client che invia booleani.
+ */
+export function validateConsents(
+  regolamentoConsent: unknown,
+  statutoConsent: unknown
+): ValidationResult {
+  if (regolamentoConsent !== true || statutoConsent !== true) {
+    return { ok: false, error: 'Accettazione di statuto e regolamento obbligatoria' };
+  }
+  return { ok: true };
+}

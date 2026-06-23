@@ -333,6 +333,8 @@ const profiloDati = profilo ? {
           indirizzo_residenza: formData.get('indirizzo_residenza') || null,
           tipo_documento: formData.get('tipo_documento') || null,
           numero_documento: formData.get('numero_documento') || null,
+          regolamento_consent: formData.get('regolamento_consent') === 'on',
+          statuto_consent: formData.get('statuto_consent') === 'on',
         }),
       });
 
