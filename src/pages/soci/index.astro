@@ -202,6 +202,11 @@ const profiloDati = profilo ? {
         <button id="add-member-btn" class="btn btn-outline">
           + Aggiungi socio
         </button>
+        {members.length > 0 && (
+          <button id="download-docs-btn" class="btn btn-primary">
+            Scarica documenti (PDF)
+          </button>
+        )}
       </div>
 
       <!-- Form nuovo componente -->
@@ -279,6 +284,26 @@ const profiloDati = profilo ? {
     addBtn.hidden = true;
     newContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
   });
+
+  // === Scarica pacchetto documenti (PDF unico) ===
+  const downloadDocsBtn = document.getElementById('download-docs-btn');
+  if (downloadDocsBtn) {
+    downloadDocsBtn.addEventListener('click', async () => {
+      const btn = downloadDocsBtn as HTMLButtonElement;
+      const original = btn.textContent;
+      btn.textContent = 'Generazione...';
+      btn.disabled = true;
+      try {
+        const { generaPacchettoDocumenti } = await import('../../lib/genera-pacchetto');
+        await generaPacchettoDocumenti();
+      } catch {
+        alert('Errore nella generazione del PDF. Riprova.');
+      } finally {
+        btn.textContent = original;
+        btn.disabled = false;
+      }
+    });
+  }
 
   newForm.querySelector('[data-cancel]')?.addEventListener('click', () => {
     newContainer.hidden = true;
