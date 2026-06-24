@@ -203,8 +203,12 @@ const profiloDati = profilo ? {
           + Aggiungi socio
         </button>
         {members.length > 0 && (
-          <button id="download-docs-btn" class="btn btn-primary">
-            Scarica documenti (PDF)
+          <button
+            id="download-docs-btn"
+            class="btn btn-primary"
+            data-referente={profilo ? `${profilo.cognome ?? ''} ${profilo.nome ?? ''}`.trim() : ''}
+          >
+            Scarica PDF soci
           </button>
         )}
       </div>
@@ -285,7 +289,7 @@ const profiloDati = profilo ? {
     newContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
   });
 
-  // === Scarica pacchetto documenti (PDF unico) ===
+  // === Scarica PDF soci (solo schede dei propri soci) ===
   const downloadDocsBtn = document.getElementById('download-docs-btn');
   if (downloadDocsBtn) {
     downloadDocsBtn.addEventListener('click', async () => {
@@ -294,8 +298,16 @@ const profiloDati = profilo ? {
       btn.textContent = 'Generazione...';
       btn.disabled = true;
       try {
-        const { generaPacchettoDocumenti } = await import('../../lib/genera-pacchetto');
-        await generaPacchettoDocumenti();
+        const res = await fetch('/api/account/data');
+        if (!res.ok) throw new Error('fetch failed');
+        const data = await res.json();
+        const referente = btn.getAttribute('data-referente') || '';
+        const { generaSociPdf } = await import('../../lib/genera-soci-pdf');
+        await generaSociPdf(data.soci ?? [], {
+          titolo: 'Elenco soci',
+          sottotitolo: referente ? `Referente: ${referente}` : undefined,
+          filename: 'soci-rifugio-rosmini.pdf',
+        });
       } catch {
         alert('Errore nella generazione del PDF. Riprova.');
       } finally {

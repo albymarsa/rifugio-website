@@ -46,6 +46,11 @@ const membersWithReferente = (allMembers || []).map((m: any) => ({
   ...m,
   referente: m.registrato_da ? referenteMap.get(m.registrato_da) ?? null : null,
 }));
+
+// Elenco referenti distinti (per l'estrazione PDF soci per referente)
+const referentiList = [...referenteMap.entries()]
+  .map(([id, r]) => ({ id, label: `${r.cognome} ${r.nome}`.trim() }))
+  .sort((a, b) => a.label.localeCompare(b.label, 'it'));
 ---
 
 <SociLayout title="Gestione Soci">
@@ -77,6 +82,20 @@ const membersWithReferente = (allMembers || []).map((m: any) => ({
       </div>
     )}
 
+    {referentiList.length > 0 && (
+      <div class="admin-page__export">
+        <label for="export-referente" class="admin-page__export-label">Estrai PDF soci per referente:</label>
+        <select id="export-referente" class="admin-page__export-select">
+          {referentiList.map((r) => (
+            <option value={r.id}>{r.label}</option>
+          ))}
+        </select>
+        <button id="export-pdf-btn" class="btn btn-outline admin-page__export-btn">
+          Scarica PDF
+        </button>
+      </div>
+    )}
+
     {error && (
       <div class="alert alert--error">
         Errore nel caricamento dei dati. Riprova.
@@ -89,6 +108,7 @@ const membersWithReferente = (allMembers || []).map((m: any) => ({
 
 <script>
   import * as XLSX from 'xlsx';
+  import { slugifyReferente } from '../../lib/socio-pdf';
 
   const exportBtn = document.getElementById('export-soci-btn');
   const yearSelect = document.getElementById('export-year') as HTMLSelectElement;
@@ -149,6 +169,48 @@ const membersWithReferente = (allMembers || []).map((m: any) => ({
       } finally {
         (exportBtn as HTMLButtonElement).textContent = 'Esporta Excel';
         (exportBtn as HTMLButtonElement).disabled = false;
+      }
+    });
+  }
+
+  // === Estrai PDF soci per referente ===
+  const pdfBtn = document.getElementById('export-pdf-btn');
+  const refSelect = document.getElementById('export-referente') as HTMLSelectElement | null;
+  if (pdfBtn && refSelect) {
+    pdfBtn.addEventListener('click', async () => {
+      const btn = pdfBtn as HTMLButtonElement;
+      const refId = refSelect.value;
+      const refLabel = refSelect.options[refSelect.selectedIndex]?.text || '';
+      const original = btn.textContent;
+      btn.textContent = 'Generazione...';
+      btn.disabled = true;
+
+      try {
+        const res = await fetch('/api/soci/export');
+        if (!res.ok) {
+          const result = await res.json().catch(() => ({}));
+          alert(result.error || 'Errore nel caricamento dei dati.');
+          return;
+        }
+        const all = await res.json();
+        const soci = all.filter((s: any) => s.registrato_da === refId);
+
+        if (soci.length === 0) {
+          alert('Nessun socio per il referente selezionato.');
+          return;
+        }
+
+        const { generaSociPdf } = await import('../../lib/genera-soci-pdf');
+        await generaSociPdf(soci, {
+          titolo: 'Elenco soci',
+          sottotitolo: `Referente: ${refLabel}`,
+          filename: `soci-${slugifyReferente(refLabel)}.pdf`,
+        });
+      } catch {
+        alert('Errore nella generazione del PDF. Riprova.');
+      } finally {
+        btn.textContent = original;
+        btn.disabled = false;
       }
     });
   }

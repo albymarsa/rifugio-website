@@ -4,6 +4,7 @@ import {
   buildSocioTitle,
   formatDateIt,
   formatDateTimeIt,
+  slugifyReferente,
   type SocioRecord,
 } from '../../src/lib/socio-pdf';
 
@@ -126,5 +127,29 @@ describe('buildSocioFields', () => {
 
   it('gestisce solo tipo documento senza numero', () => {
     expect(docByLabel({ ...fullSocio, numero_documento: null })).toBe("Carta d'identita");
+  });
+});
+
+describe('slugifyReferente', () => {
+  it('genera uno slug semplice da nome e cognome', () => {
+    expect(slugifyReferente('Rossi Mario')).toBe('rossi-mario');
+  });
+
+  it('normalizza gli accenti italiani invece di troncarli', () => {
+    expect(slugifyReferente('Nicolò Verdì')).toBe('nicolo-verdi');
+    expect(slugifyReferente('Niccolò')).toBe('niccolo');
+  });
+
+  it('collassa spazi e caratteri non alfanumerici', () => {
+    expect(slugifyReferente("D'Angelo  Anna")).toBe('d-angelo-anna');
+  });
+
+  it('rimuove trattini iniziali e finali', () => {
+    expect(slugifyReferente('  Bianchi  ')).toBe('bianchi');
+  });
+
+  it('ripiega su "referente" se non resta nulla di utile', () => {
+    expect(slugifyReferente('')).toBe('referente');
+    expect(slugifyReferente('!!!')).toBe('referente');
   });
 });

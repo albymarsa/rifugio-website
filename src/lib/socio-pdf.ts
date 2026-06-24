@@ -61,6 +61,22 @@ function val(v?: string | null): string {
   return v && v.trim() !== '' ? v : PLACEHOLDER;
 }
 
+/**
+ * Slug per nome file a partire da un'etichetta referente: "Rossi Mario" → "rossi-mario".
+ * Normalizza gli accenti (à→a, è→e, ò→o) così non vengono persi nel nome file.
+ * Ritorna 'referente' se l'etichetta non produce caratteri utili.
+ */
+export function slugifyReferente(label: string): string {
+  return (
+    label
+      .normalize('NFD')
+      .replace(/[̀-ͯ]/g, '')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '') || 'referente'
+  );
+}
+
 /** Titolo della scheda: "N. 12 — Cognome Nome" (o senza numero se assente). */
 export function buildSocioTitle(socio: SocioRecord): string {
   const nome = [socio.cognome, socio.nome].filter((p) => p && p.trim() !== '').join(' ').trim();
