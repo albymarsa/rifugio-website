@@ -71,6 +71,9 @@ Sei l'esperto di sicurezza e GDPR del progetto **rifugio-website**. Conosci l'au
 5. **Opt-out comunicazioni associative** — base consenso dichiarata in privacy policy ma nessun toggle nell'area soci
    - Fix: aggiungere preferenza comunicazioni nel profilo utente
 
+6. **Privacy policy non menziona Vercel Web Analytics** (attivato 2026-07-05) — non obbligatorio perché lo strumento è cookieless e non tratta dati personali, quindi §7 e §9 restano tecnicamente accurate; scelta consapevole del titolare di non aggiornare per ora
+   - Fix (opzionale, best practice): aggiungere a `src/pages/privacy.astro` §9 una riga sullo strumento di statistiche aggregate e anonime
+
 ---
 
 ## Dati personali trattati
@@ -91,7 +94,7 @@ Retention dichiarata: prenotazioni 5 anni, soci durata iscrizione + 10 anni (obb
 
 - **Supabase** — unico processore dati esterno, infrastruttura EU, gestisce auth + DB
 - **Vercel** — hosting, non elabora dati utenti
-- **Nessun analytics, nessun tracking, nessun cookie di profilazione**
+- **Vercel Web Analytics** — attivato 2026-07-05 sul sito pubblico (`<Analytics />` in `src/layouts/Layout.astro`, pacchetto `@vercel/analytics`). **Cookieless**: nessun cookie, nessun dato personale/PII, conteggio aggregato di visite e pagine viste. Piano Hobby (gratis, 50k eventi/mese, storico 1 mese). Non presente nell'area soci (`SociLayout.astro`)
 - **XLSX (SheetJS)** — installato da CDN (`cdn.sheetjs.com`), usato solo per export admin lato server
 
 ---
