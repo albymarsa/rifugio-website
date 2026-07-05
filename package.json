@@ -20,6 +20,7 @@
   "dependencies": {
     "@astrojs/vercel": "^10.0.0",
     "@supabase/supabase-js": "^2.99.1",
+    "@vercel/analytics": "^2.0.1",
     "astro": "^6.0.4",
     "nodemailer": "^8.0.5",
     "pdf-lib": "^1.17.1",
