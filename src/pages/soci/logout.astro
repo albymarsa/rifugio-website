@@ -1,9 +1,10 @@
 ---
 export const prerender = false;
 
+import { clearAuthCookies } from '../../lib/auth';
+
 // Cancella i cookie di autenticazione
-Astro.cookies.delete('sb-access-token', { path: '/' });
-Astro.cookies.delete('sb-refresh-token', { path: '/' });
+clearAuthCookies(Astro.cookies);
 
 return Astro.redirect('/');
 ---

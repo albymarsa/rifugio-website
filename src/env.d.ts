@@ -17,6 +17,8 @@ interface ImportMetaEnv {
 declare namespace App {
   interface Locals {
     user?: import('@supabase/supabase-js').User;
+    /** Client Supabase autenticato, impostato dal middleware sulle rotte protette */
+    supabase?: import('@supabase/supabase-js').SupabaseClient;
     isFounder?: boolean;
   }
 }
