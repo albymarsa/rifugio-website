@@ -35,6 +35,7 @@ Config: `vitest.config.ts` — environment `node`, include `tests/unit/**/*.test
 | `tests/unit/availability.test.ts` | `aggregateOccupancy(bookings, anno, mese)` | `src/lib/booking.ts` |
 | `tests/unit/member-validation.test.ts` | `validateMemberRequired` + `validateMemberFieldLengths` | `src/lib/member-validation.ts` |
 | `tests/unit/member-ownership.test.ts` | `canEditMember(target, userId)` | `src/lib/member-ownership.ts` |
+| `tests/unit/auth-cookies.test.ts` | `setAuthCookies` + `clearAuthCookies` (nomi cookie, attributi httpOnly/secure/sameSite, maxAge 1h/7gg) | `src/lib/auth.ts` |
 
 **Regola:** qualsiasi logica aggiunta agli endpoint API (`prenotazioni.ts`, `disponibilita.ts`, `soci/index.ts`, …) va prima estratta in una funzione pura in `src/lib/` (`booking.ts`, `csrf.ts`, `member-validation.ts`, `member-ownership.ts`, senza import Astro), poi testata in `tests/unit/`.
 
@@ -102,7 +103,7 @@ Gli hook funzionano solo dentro una sessione Claude Code attiva su questa macchi
 
 ## Lacune note (da coprire in futuro)
 
-1. **Auth flow completo** (login → booking → logout) — richiede fake Supabase. Tutti i file chiamano `createClient` direttamente da `@supabase/supabase-js`, quindi serve un alias Vite o un refactor. Non implementato.
+1. **Auth flow completo** (login → booking → logout) — richiede fake Supabase. Dal refactor dedup-auth (2026-07-09, commit `396e28d`) `createClient` è centralizzato nelle factory di `src/lib/supabase.ts` (`createAnonClient`/`createServiceClient`): basta un alias Vite su quel modulo per mockare Supabase ovunque. Test non ancora implementati.
 2. **GDPR** — `/api/account/data` e `/api/account/delete` non coperti.
 3. **Admin/founder panel** — `/soci/admin`, `/soci/prenotazioni` non coperti.
 4. **Partecipanti** — `prenotazioni-soci`, `prenotazioni-partecipanti` non coperti.
@@ -124,7 +125,7 @@ Gli hook funzionano solo dentro una sessione Claude Code attiva su questa macchi
 
 ## Regola CMS
 
-`src/data/content.json` è versionato in git. Il flusso corretto dopo ogni modifica via CMS è: **Salva** → **Pubblica** (Vercel CLI). Se si fa `git push` codice senza aver fatto Pubblica, Vercel ridispiega la versione in git che può essere stale. Fix definitivo (CMS che committa automaticamente) non ancora implementato (tag: `cms-git-workflow`).
+`src/data/content.json` è versionato in git. Il flusso dopo ogni modifica via CMS è: **Salva** → **Pubblica**. Dal fix `9dc6f20` (2026-06-10) Pubblica fa commit (se ci sono modifiche) + `git pull --rebase` + `git push` sempre: Vercel ridispiega dal push su main. Dettagli e failure mode storici in `infrastructure-engineer.md`.
 
 ---
 

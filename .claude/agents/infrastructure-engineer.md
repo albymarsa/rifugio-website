@@ -168,7 +168,7 @@ Tag OG aggiunti in **`src/layouts/Layout.astro`** (commit `caa40f1`).
 
 - `astro.config.mjs` — adapter Vercel
 - `src/layouts/Layout.astro` — meta tag (description, Open Graph)
-- `src/lib/supabase.ts` — client Supabase
+- `src/lib/supabase.ts` — factory client Supabase (`createAnonClient`/`createServiceClient`, unico punto che legge le env)
 - `.vercel/project.json` — link al progetto Vercel
 - `.env` (gitignored) — `PUBLIC_SUPABASE_URL`, `PUBLIC_SUPABASE_ANON_KEY`
 

@@ -21,9 +21,10 @@ Sei l'esperto di sicurezza e GDPR del progetto **rifugio-website**. Conosci l'au
 
 ### Autenticazione
 - Cookie: `sb-access-token` (1h) + `sb-refresh-token` (7gg)
-- Tutti i cookie: `httpOnly: true`, `secure: true`, `sameSite: 'lax'`
-- Middleware protegge `/soci/*` e `/prenota` — pubbliche: `/`, `/privacy`, `/soci/login`, `/soci/registrazione`, `/soci/logout`
-- File: `src/middleware.ts`, `src/pages/api/auth/signin.ts`, `src/pages/api/auth/signup.ts`
+- Tutti i cookie: `httpOnly: true`, `secure: true`, `sameSite: 'lax'` — impostati/cancellati SOLO via `setAuthCookies`/`clearAuthCookies` in `src/lib/auth.ts` (dedup 2026-07-09, commit `396e28d`)
+- Middleware protegge `/soci/*` e `/prenota` — pubbliche: `/`, `/privacy`, `/soci/login`, `/soci/registrazione`, `/soci/logout`; mette il client autenticato in `locals.supabase` per le pagine (niente più setSession duplicati)
+- `createClient` centralizzato nelle factory `createAnonClient`/`createServiceClient` di `src/lib/supabase.ts` — unico punto che legge le chiavi
+- File: `src/middleware.ts`, `src/lib/auth.ts`, `src/lib/supabase.ts`, `src/pages/api/auth/signin.ts`, `src/pages/api/auth/signup.ts`
 
 ### Chiavi Supabase
 - `PUBLIC_SUPABASE_URL` e `PUBLIC_SUPABASE_ANON_KEY` → variabili pubbliche, esposte al client (comportamento atteso)
@@ -130,8 +131,8 @@ Domande da porsi ad ogni audit:
 
 - `src/middleware.ts` — auth e protezione rotte
 - `src/lib/csrf.ts` — logica CSRF
-- `src/lib/auth.ts` — helper autenticazione
-- `src/lib/supabase.ts` — client Supabase
+- `src/lib/auth.ts` — helper autenticazione (`getAuthenticatedClient`, `setAuthCookies`, `clearAuthCookies`)
+- `src/lib/supabase.ts` — factory client Supabase (`createAnonClient`, `createServiceClient`)
 - `src/pages/privacy.astro` — informativa GDPR
 - `src/pages/api/account/data.ts` — export dati (GDPR Art. 20)
 - `src/pages/api/account/delete.ts` — cancellazione account (GDPR Art. 17)
