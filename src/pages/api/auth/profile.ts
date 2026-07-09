@@ -1,36 +1,16 @@
 export const prerender = false;
 
 import type { APIRoute } from 'astro';
-import { createClient } from '@supabase/supabase-js';
+import { getAuthenticatedClient, jsonError } from '../../../lib/auth';
 
 export const POST: APIRoute = async ({ request, cookies }) => {
   try {
-    const accessToken = cookies.get('sb-access-token')?.value;
-    const refreshToken = cookies.get('sb-refresh-token')?.value;
-
-    if (!accessToken || !refreshToken) {
-      return new Response(JSON.stringify({ error: 'Non autenticato' }), {
-        status: 401,
-        headers: { 'Content-Type': 'application/json' },
-      });
+    const auth = await getAuthenticatedClient(cookies);
+    if ('error' in auth) {
+      return jsonError(auth.error, auth.status);
     }
 
-    const supabase = createClient(
-      import.meta.env.PUBLIC_SUPABASE_URL,
-      import.meta.env.PUBLIC_SUPABASE_ANON_KEY
-    );
-
-    const { data: sessionData, error: sessionError } = await supabase.auth.setSession({
-      access_token: accessToken,
-      refresh_token: refreshToken,
-    });
-
-    if (sessionError || !sessionData.user) {
-      return new Response(JSON.stringify({ error: 'Sessione non valida' }), {
-        status: 401,
-        headers: { 'Content-Type': 'application/json' },
-      });
-    }
+    const { supabase, user } = auth;
 
     const { nome, cognome, telefono } = await request.json();
 
@@ -42,10 +22,10 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     }
 
     const { error } = await supabase.from('profili').insert([{
-      id: sessionData.user.id,
+      id: user.id,
       nome,
       cognome,
-      email: sessionData.user.email,
+      email: user.email,
       telefono: telefono || null,
     }]);
 

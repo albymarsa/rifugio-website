@@ -1,7 +1,8 @@
 export const prerender = false;
 
 import type { APIRoute } from 'astro';
-import { createClient } from '@supabase/supabase-js';
+import { createAnonClient } from '../../../lib/supabase';
+import { setAuthCookies } from '../../../lib/auth';
 
 export const POST: APIRoute = async ({ request, cookies }) => {
   try {
@@ -14,10 +15,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       });
     }
 
-    const supabase = createClient(
-      import.meta.env.PUBLIC_SUPABASE_URL,
-      import.meta.env.PUBLIC_SUPABASE_ANON_KEY
-    );
+    const supabase = createAnonClient();
 
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
@@ -32,20 +30,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     }
 
     if (data.session) {
-      cookies.set('sb-access-token', data.session.access_token, {
-        path: '/',
-        maxAge: 3600,
-        sameSite: 'lax',
-        secure: true,
-        httpOnly: true,
-      });
-      cookies.set('sb-refresh-token', data.session.refresh_token, {
-        path: '/',
-        maxAge: 604800,
-        sameSite: 'lax',
-        secure: true,
-        httpOnly: true,
-      });
+      setAuthCookies(cookies, data.session);
     }
 
     return new Response(JSON.stringify({ success: true }), {

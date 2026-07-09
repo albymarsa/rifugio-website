@@ -1,7 +1,7 @@
 export const prerender = false;
 
 import type { APIRoute } from 'astro';
-import { createClient } from '@supabase/supabase-js';
+import { createServiceClient } from '../../lib/supabase';
 import { jsonError, jsonOk } from '../../lib/auth';
 import { aggregateOccupancy, CAPACITA } from '../../lib/booking';
 
@@ -34,10 +34,7 @@ export const GET: APIRoute = async ({ url }) => {
       return jsonError('Configurazione server incompleta', 500);
     }
 
-    const adminClient = createClient(
-      import.meta.env.PUBLIC_SUPABASE_URL,
-      serviceRoleKey
-    );
+    const adminClient = createServiceClient();
 
     // Trova prenotazioni che si sovrappongono al mese richiesto
     const { data: bookings, error } = await adminClient

@@ -3,27 +3,13 @@ export const prerender = false;
 
 import SociLayout from '../../layouts/SociLayout.astro';
 import PrenotazioneCard from '../../components/soci/PrenotazioneCard.astro';
-import { createClient } from '@supabase/supabase-js';
 
 const user = Astro.locals.user;
-if (!user) {
+if (!user || !Astro.locals.supabase) {
   return Astro.redirect('/soci/login');
 }
 
-const supabase = createClient(
-  import.meta.env.PUBLIC_SUPABASE_URL,
-  import.meta.env.PUBLIC_SUPABASE_ANON_KEY
-);
-
-const accessToken = Astro.cookies.get('sb-access-token')?.value;
-const refreshToken = Astro.cookies.get('sb-refresh-token')?.value;
-
-if (accessToken && refreshToken) {
-  await supabase.auth.setSession({
-    access_token: accessToken,
-    refresh_token: refreshToken,
-  });
-}
+const supabase = Astro.locals.supabase;
 
 // Carica tutte le prenotazioni
 const { data: prenotazioni, error: prenError } = await supabase

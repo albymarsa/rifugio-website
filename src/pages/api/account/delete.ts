@@ -1,8 +1,8 @@
 export const prerender = false;
 
 import type { APIRoute } from 'astro';
-import { createClient } from '@supabase/supabase-js';
-import { getAuthenticatedClient, jsonError, jsonOk } from '../../../lib/auth';
+import { createServiceClient } from '../../../lib/supabase';
+import { getAuthenticatedClient, clearAuthCookies, jsonError, jsonOk } from '../../../lib/auth';
 
 /** DELETE: Elimina account utente e tutti i dati associati (GDPR Art. 17) */
 export const DELETE: APIRoute = async ({ cookies }) => {
@@ -19,10 +19,7 @@ export const DELETE: APIRoute = async ({ cookies }) => {
       return jsonError('Configurazione server incompleta', 500);
     }
 
-    const adminClient = createClient(
-      import.meta.env.PUBLIC_SUPABASE_URL,
-      serviceRoleKey
-    );
+    const adminClient = createServiceClient();
 
     // 1. Elimina i soci registrati dall'utente
     //    (le associazioni prenotazioni_soci vengono eliminate via ON DELETE CASCADE sulla FK)
@@ -52,8 +49,7 @@ export const DELETE: APIRoute = async ({ cookies }) => {
     }
 
     // 5. Pulisci i cookie di sessione
-    cookies.delete('sb-access-token', { path: '/' });
-    cookies.delete('sb-refresh-token', { path: '/' });
+    clearAuthCookies(cookies);
 
     return jsonOk({ success: true, message: 'Account eliminato con successo' });
   } catch {

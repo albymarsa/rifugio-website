@@ -1,7 +1,7 @@
 export const prerender = false;
 
 import type { APIRoute } from 'astro';
-import { createClient } from '@supabase/supabase-js';
+import { createAnonClient } from '../../../lib/supabase';
 
 export const POST: APIRoute = async ({ request }) => {
   try {
@@ -14,10 +14,7 @@ export const POST: APIRoute = async ({ request }) => {
       });
     }
 
-    const supabase = createClient(
-      import.meta.env.PUBLIC_SUPABASE_URL,
-      import.meta.env.PUBLIC_SUPABASE_ANON_KEY
-    );
+    const supabase = createAnonClient();
 
     const origin = new URL(request.url).origin;
     await supabase.auth.resetPasswordForEmail(email, {

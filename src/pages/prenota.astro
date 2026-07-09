@@ -4,28 +4,13 @@ export const prerender = false;
 import Layout from '../layouts/Layout.astro';
 import BookingForm from '../components/BookingForm.astro';
 import CalendarioDisponibilita from '../components/CalendarioDisponibilita.astro';
-import { createClient } from '@supabase/supabase-js';
 
 const user = Astro.locals.user;
+const supabase = Astro.locals.supabase;
 
 // Carica profilo utente
 let profilo: any = null;
-if (user) {
-  const supabase = createClient(
-    import.meta.env.PUBLIC_SUPABASE_URL,
-    import.meta.env.PUBLIC_SUPABASE_ANON_KEY
-  );
-
-  const accessToken = Astro.cookies.get('sb-access-token')?.value;
-  const refreshToken = Astro.cookies.get('sb-refresh-token')?.value;
-
-  if (accessToken && refreshToken) {
-    await supabase.auth.setSession({
-      access_token: accessToken,
-      refresh_token: refreshToken,
-    });
-  }
-
+if (user && supabase) {
   const { data } = await supabase.from('profili').select('*').eq('id', user.id).single();
   profilo = data;
 }

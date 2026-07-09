@@ -5,39 +5,14 @@ import SociLayout from '../../layouts/SociLayout.astro';
 import MemberCard from '../../components/soci/MemberCard.astro';
 import MemberForm from '../../components/soci/MemberForm.astro';
 import PrenotazioneCard from '../../components/soci/PrenotazioneCard.astro';
-import { createClient } from '@supabase/supabase-js';
 
 const user = Astro.locals.user;
-if (!user) {
+if (!user || !Astro.locals.supabase) {
   return Astro.redirect('/soci/login');
 }
 
-// Crea client con la sessione dell'utente
-const supabase = createClient(
-  import.meta.env.PUBLIC_SUPABASE_URL,
-  import.meta.env.PUBLIC_SUPABASE_ANON_KEY
-);
-
-const accessToken = Astro.cookies.get('sb-access-token')?.value;
-const refreshToken = Astro.cookies.get('sb-refresh-token')?.value;
-
-let sessionError = null;
-if (accessToken && refreshToken) {
-  const { error: sessErr } = await supabase.auth.setSession({
-    access_token: accessToken,
-    refresh_token: refreshToken,
-  });
-  if (sessErr) {
-    console.error('[Dashboard] Errore sessione:', sessErr.message);
-    sessionError = sessErr;
-  }
-}
-
-if (sessionError) {
-  Astro.cookies.delete('sb-access-token', { path: '/' });
-  Astro.cookies.delete('sb-refresh-token', { path: '/' });
-  return Astro.redirect('/soci/login');
-}
+// Client autenticato creato dal middleware
+const supabase = Astro.locals.supabase;
 
 // Carica profilo utente
 const { data: profilo } = await supabase.from('profili').select('*').eq('id', user.id).single();
