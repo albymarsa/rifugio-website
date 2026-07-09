@@ -10,6 +10,7 @@ const currentPath = Astro.url.pathname;
     <nav class="header__nav">
       <a href="/" class:list={["header__link", { active: currentPath === "/" }]}>Il Rifugio</a>
       <a href="/prenota" class:list={["header__link", { active: currentPath === "/prenota" }]}>Prenota</a>
+      <a href="/sostienici" class:list={["header__link", { active: currentPath === "/sostienici" }]}>Sostienici</a>
       <a href="/soci/login" class:list={["header__link", { active: currentPath.startsWith("/soci") }]}>Area Personale</a>
     </nav>
     <button class="header__menu" aria-label="Apri menu" id="menu-toggle">
@@ -23,6 +24,7 @@ const currentPath = Astro.url.pathname;
 <div class="mobile-nav" id="mobile-nav">
   <a href="/" class="mobile-nav__link">Il Rifugio</a>
   <a href="/prenota" class="mobile-nav__link">Prenota</a>
+  <a href="/sostienici" class="mobile-nav__link">Sostienici</a>
   <a href="/soci/login" class="mobile-nav__link">Area Personale</a>
 </div>
 

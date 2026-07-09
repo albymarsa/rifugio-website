@@ -1,0 +1,181 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+const iban = 'IT28B0501801600000020002214';
+---
+
+<Layout
+  title="Sostienici — Rifugio Rosmini"
+  description="Sostieni il Rifugio Antonio Rosmini all'Alpe Veglia con una donazione: bonifico ad Amici del Veglia (Banca Etica) o QR code da inquadrare con l'app della tua banca."
+>
+  <section class="sostienici">
+    <div class="container">
+      <div class="section-label">Sostienici</div>
+      <h1 class="section-title">Aiutaci a prenderci cura del Rifugio</h1>
+
+      <div class="sostienici__intro">
+        <p>
+          Siamo una piccola associazione senza scopo di lucro e contiamo sulla Vostra
+          grande amicizia. Come tutte le case, anche il Rifugio ha bisogno di manutenzione:
+          vorremmo progressivamente intervenire sui materiali della cucina, sui bagni e sugli
+          spazi comuni, così da poter dare una migliore accoglienza a Voi e ad altri gruppi.
+        </p>
+        <p>
+          Ogni contributo, anche piccolo, ci aiuta a mantenere viva questa casa di montagna.
+          <strong>Grazie di cuore.</strong>
+        </p>
+      </div>
+
+      <div class="sostienici__bank">
+        <h2>Fai una donazione con bonifico</h2>
+        <dl class="bank-details">
+          <div class="bank-details__row">
+            <dt>Intestatario</dt>
+            <dd>Amici del Veglia</dd>
+          </div>
+          <div class="bank-details__row">
+            <dt>IBAN</dt>
+            <dd>
+              <span class="bank-details__iban" id="iban-value">{iban}</span>
+              <button type="button" class="copy-btn" id="copy-iban" data-iban={iban}>
+                Copia IBAN
+              </button>
+            </dd>
+          </div>
+          <div class="bank-details__row">
+            <dt>Banca</dt>
+            <dd>Banca Etica</dd>
+          </div>
+          <div class="bank-details__row">
+            <dt>Causale</dt>
+            <dd>Donazione Rifugio Rosmini</dd>
+          </div>
+        </dl>
+      </div>
+    </div>
+  </section>
+</Layout>
+
+<script>
+  const btn = document.getElementById('copy-iban') as HTMLButtonElement | null;
+  if (btn) {
+    const originalLabel = btn.textContent;
+    btn.addEventListener('click', async () => {
+      const iban = btn.dataset.iban ?? '';
+      try {
+        await navigator.clipboard.writeText(iban);
+      } catch {
+        // Fallback per browser/contesti senza Clipboard API
+        const tmp = document.createElement('textarea');
+        tmp.value = iban;
+        tmp.style.position = 'fixed';
+        tmp.style.opacity = '0';
+        document.body.appendChild(tmp);
+        tmp.select();
+        try {
+          document.execCommand('copy');
+        } catch {
+          /* nessuna azione: il valore resta visibile e copiabile a mano */
+        }
+        document.body.removeChild(tmp);
+      }
+      btn.textContent = 'Copiato!';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.textContent = originalLabel;
+        btn.classList.remove('copied');
+      }, 2000);
+    });
+  }
+</script>
+
+<style>
+  .sostienici {
+    padding: 6rem 0 4rem;
+  }
+
+  .sostienici__intro {
+    max-width: 720px;
+    margin-bottom: 3rem;
+  }
+
+  .sostienici__intro p {
+    font-size: 0.95rem;
+    line-height: 1.8;
+    color: var(--color-dark);
+    margin-bottom: 1rem;
+    max-width: none;
+  }
+
+  .sostienici__bank {
+    background-color: var(--color-off-white);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    padding: 2rem;
+    max-width: 560px;
+  }
+
+  .sostienici__bank h2 {
+    font-size: 1.15rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .bank-details__row {
+    padding: 0.9rem 0;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .bank-details__row:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+
+  .bank-details dt {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-gray);
+    margin-bottom: 0.35rem;
+  }
+
+  .bank-details dd {
+    font-size: 1rem;
+    color: var(--color-black);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .bank-details__iban {
+    font-family: 'SF Mono', 'Menlo', 'Consolas', monospace;
+    font-size: 1.05rem;
+    letter-spacing: 0.03em;
+    word-break: break-all;
+  }
+
+  .copy-btn {
+    font-family: var(--font-main);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    color: var(--color-white);
+    background-color: var(--color-accent);
+    border: none;
+    border-radius: 5px;
+    padding: 0.4rem 0.8rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    white-space: nowrap;
+  }
+
+  .copy-btn:hover {
+    background-color: var(--color-accent-hover);
+  }
+
+  .copy-btn.copied {
+    background-color: var(--color-dark);
+  }
+
+</style>
