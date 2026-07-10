@@ -26,6 +26,7 @@ pnpm-debug.log*
 .claude/*
 !.claude/settings.json
 !.claude/agents/
+!.claude/skills/
 .vercel
 
 # test artifacts
@@ -34,3 +35,6 @@ test-results/
 
 # cms local install
 cms/node_modules/
+
+# materiali di origine non pubblicati (fonti PDF, ecc.)
+StoriaRifugioRosmini.pdf
