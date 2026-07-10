@@ -42,6 +42,18 @@ test.describe('Home page', () => {
     expect(response?.status()).toBe(200);
     await expect(page.locator('.section-title')).toHaveText('La storia del Rifugio');
     await expect(page.locator('.storia__back a')).toHaveAttribute('href', '/');
+
+    // Struttura: due documenti d'archivio + una voce dell'associazione
+    await expect(page.locator('.storia__doc')).toHaveCount(2);
+    await expect(page.locator('.storia__voice')).toHaveCount(1);
+
+    // La foto d'epoca è presente e viene effettivamente caricata (asset committato)
+    const img = page.locator('.storia__figure img');
+    await expect(img).toHaveAttribute('alt', /.+/);
+    await img.scrollIntoViewIfNeeded();
+    await expect
+      .poll(() => img.evaluate((el: HTMLImageElement) => el.naturalWidth))
+      .toBeGreaterThan(0);
   });
 
   test('protected route redirects to login', async ({ page }) => {

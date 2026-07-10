@@ -11,7 +11,31 @@ import Layout from '../layouts/Layout.astro';
       <div class="section-label">La nostra storia</div>
       <h1 class="section-title">La storia del Rifugio</h1>
 
-      <article class="storia__body">
+      <p class="storia__intro">
+        Le pagine che seguono riportano due documenti d'archivio: la memoria di don Gino
+        Plazzer sulla scoperta della casa, e la descrizione dell'Alpe tratta dalla storia
+        delle case rosminiane. In coda trovi invece la voce di oggi dell'associazione «Amici
+        del Veglia».
+      </p>
+
+      <!-- Documento d'archivio: memoria di don Plazzer + L'incanto dell'Alpe -->
+      <article class="storia__doc">
+        <p class="storia__doc-label">Da un documento d'archivio</p>
+
+        <figure class="storia__figure">
+          <img
+            src="/images/storia-alpe-veglia-1946.jpg"
+            alt="Fotografia in bianco e nero dell'Alpe Veglia negli anni Quaranta"
+            width="1440"
+            height="958"
+            loading="lazy"
+          />
+          <figcaption>
+            L'Alpe Veglia in una fotografia d'epoca: il ponte di legno sul torrente e, sulla
+            destra, la casa. Sullo sfondo il cerchio di monti che corona la conca.
+          </figcaption>
+        </figure>
+
         <section class="storia__section">
           <h2>Alpe Veglia «Case Paloschi» sopra Varzo</h2>
           <p class="storia__subtitle">Da una memoria di don Gino Plazzer, rosminiano</p>
@@ -126,6 +150,11 @@ import Layout from '../layouts/Layout.astro';
             le vacanze degli scolastici del Calvario.
           </p>
         </section>
+      </article>
+
+      <!-- Documento d'archivio: L'incanto dell'Alpe (G. Airaudo, 1993) -->
+      <article class="storia__doc">
+        <p class="storia__doc-label">Da un documento d'archivio</p>
 
         <section class="storia__section">
           <h2>L'incanto dell'Alpe</h2>
@@ -166,7 +195,10 @@ import Layout from '../layouts/Layout.astro';
             volume II «Le case rosminiane in Italia», 1993)
           </p>
         </section>
+      </article>
 
+      <!-- Voce dell'associazione: oggi -->
+      <article class="storia__voice">
         <section class="storia__section">
           <h2>Un nuovo passo per la casa, nasce il Rifugio Rosmini</h2>
 
@@ -238,26 +270,119 @@ import Layout from '../layouts/Layout.astro';
     padding: 6rem 0 4rem;
   }
 
-  .storia__body {
+  .storia__intro {
     max-width: 720px;
+    font-size: 1rem;
+    line-height: 1.7;
+    color: var(--color-gray);
+    margin-bottom: 2.5rem;
   }
 
-  .storia__section {
-    margin-bottom: 3.5rem;
+  /* Documento d'archivio: memoria riportata da fonte esterna */
+  .storia__doc {
+    max-width: 720px;
+    background-color: #f7f2e8;
+    border: 1px solid #e6dcc6;
+    border-left: 4px solid #a9885a;
+    border-radius: 6px;
+    padding: 2.5rem 2.75rem;
+    font-family: Georgia, 'Times New Roman', 'Iowan Old Style', serif;
+    color: #3d372c;
   }
 
-  .storia__section h2 {
-    font-size: 1.5rem;
-    margin-bottom: 0.75rem;
+  .storia__doc + .storia__doc {
+    margin-top: 3.5rem;
+  }
+
+  .storia__doc-label {
+    font-family: var(--font-main);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: #a9885a;
+    margin-bottom: 1.75rem;
+  }
+
+  .storia__figure {
+    margin: 0 0 2.25rem;
+  }
+
+  .storia__figure img {
+    display: block;
+    width: 100%;
+    height: auto;
+    border: 6px solid #fff;
+    box-shadow: 0 2px 12px rgba(61, 55, 44, 0.25);
+    filter: grayscale(100%) sepia(12%);
+  }
+
+  .storia__figure figcaption {
+    font-family: var(--font-main);
+    font-size: 0.8rem;
+    line-height: 1.5;
+    color: #8a7f68;
+    margin-top: 0.75rem;
+    text-align: center;
+  }
+
+  .storia__doc .storia__section {
+    margin-bottom: 2.5rem;
+  }
+
+  .storia__doc .storia__section:last-child {
+    margin-bottom: 0;
+  }
+
+  .storia__doc h2 {
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 1.45rem;
+    color: #33301f;
+    margin-bottom: 0.6rem;
   }
 
   .storia__subtitle {
     font-style: italic;
-    color: var(--color-gray);
+    color: #8a7f68;
     margin-bottom: 1.5rem !important;
   }
 
-  .storia__body p {
+  .storia__doc p {
+    font-size: 1.05rem;
+    line-height: 1.85;
+    margin-bottom: 1.25rem;
+    max-width: none;
+  }
+
+  .storia__doc blockquote {
+    margin: 1.75rem 0;
+    padding-left: 1.5rem;
+    border-left: 3px solid #a9885a;
+    font-style: italic;
+    line-height: 1.85;
+    color: #4a4335;
+  }
+
+  .storia__attribution {
+    font-family: var(--font-main);
+    font-size: 0.85rem !important;
+    color: #8a7f68;
+    font-style: italic;
+    margin-top: 1.5rem;
+  }
+
+  /* Voce dell'associazione: oggi — tipografia pulita del sito */
+  .storia__voice {
+    max-width: 720px;
+    margin-top: 3.5rem;
+  }
+
+  .storia__voice h2 {
+    font-size: 1.6rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .storia__voice p {
     font-size: 1.05rem;
     line-height: 1.8;
     color: var(--color-dark);
@@ -265,24 +390,19 @@ import Layout from '../layouts/Layout.astro';
     max-width: none;
   }
 
-  .storia__body blockquote {
-    margin: 1.75rem 0;
-    padding-left: 1.5rem;
-    border-left: 3px solid var(--color-accent);
-    font-style: italic;
-    color: var(--color-dark);
-    line-height: 1.8;
-  }
-
-  .storia__attribution,
   .storia__signature {
-    font-size: 0.9rem !important;
-    color: var(--color-gray);
-    font-style: italic;
+    font-weight: 700;
+    color: var(--color-black);
     margin-top: 1.5rem;
   }
 
   .storia__back {
-    margin-top: 1rem;
+    margin-top: 3rem;
+  }
+
+  @media (max-width: 768px) {
+    .storia__doc {
+      padding: 1.75rem 1.5rem;
+    }
   }
 </style>
