@@ -37,6 +37,13 @@ test.describe('Home page', () => {
     expect(response?.status()).toBe(200);
   });
 
+  test('storia page renders', async ({ page }) => {
+    const response = await page.goto('/storia');
+    expect(response?.status()).toBe(200);
+    await expect(page.locator('.section-title')).toHaveText('La storia del Rifugio');
+    await expect(page.locator('.storia__back a')).toHaveAttribute('href', '/');
+  });
+
   test('protected route redirects to login', async ({ page }) => {
     await page.goto('/soci/');
     await expect(page).toHaveURL(/\/soci\/login/);

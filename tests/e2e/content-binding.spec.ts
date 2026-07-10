@@ -46,6 +46,14 @@ test.describe('Content binding (CMS → home)', () => {
     await expect(page.locator('.info__text p').first()).toHaveText(firstParagraph);
   });
 
+  test('info section links to the storia page', async ({ page }) => {
+    await page.goto('/');
+    const link = page.locator('.info__storia-btn');
+    await expect(link).toBeVisible();
+    await expect(link).toHaveAttribute('href', '/storia');
+    await expect(link).toHaveText('Scopri la storia del rifugio');
+  });
+
   test('footer Facebook link href matches content.json', async ({ page }) => {
     await page.goto('/');
     await expect(

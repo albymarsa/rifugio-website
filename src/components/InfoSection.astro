@@ -15,6 +15,7 @@ const { label, title, paragraphs, contact_email, details } = content.info;
             Per informazioni e richieste particolari scrivi a <a href={`mailto:${contact_email}`}>{contact_email}</a>.
           </p>
         )}
+        <a href="/storia" class="btn btn-outline info__storia-btn">Scopri la storia del rifugio</a>
       </div>
       <div class="info__details">
         {details.map((d: { label: string; value: string }) => (
@@ -39,6 +40,10 @@ const { label, title, paragraphs, contact_email, details } = content.info;
 
   .info__text p {
     font-size: 1.05rem;
+  }
+
+  .info__storia-btn {
+    margin-top: 1.75rem;
   }
 
   .info__details {
