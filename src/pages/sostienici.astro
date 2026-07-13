@@ -2,6 +2,21 @@
 import Layout from '../layouts/Layout.astro';
 
 const iban = 'IT28B0501801600000020002214';
+
+// Ringraziamenti a chi ha sostenuto il Rifugio.
+// Per aggiungerne altri in futuro basta inserire una nuova voce qui sotto.
+const ringraziamenti = [
+  {
+    nome: 'Elio, parrocchia di Covo',
+    testo:
+      'per essere intervenuto più volte con piccole riparazioni e sistemazioni: una porta che faticava a chiudersi, la cassetta di scarico di un bagno e altri preziosi accorgimenti.',
+  },
+  {
+    nome: 'Parrocchia di Olmeneta – don Gabriele',
+    testo:
+      'per la generosa donazione di nuove padelle, che andranno a sostituire quelle ormai datate della casa.',
+  },
+];
 ---
 
 <Layout
@@ -51,6 +66,23 @@ const iban = 'IT28B0501801600000020002214';
             <dd>Donazione Rifugio Rosmini</dd>
           </div>
         </dl>
+      </div>
+
+      <div class="sostienici__thanks">
+        <h2>Grazie a chi ci sostiene</h2>
+        <p class="sostienici__thanks-intro">
+          Il Rifugio vive anche grazie a chi, nel tempo, ci ha dato una mano in tanti modi
+          diversi. Un ringraziamento sincero a chi ha contribuito con lavoro, materiali e
+          gesti di generosità.
+        </p>
+        <ul class="thanks-list">
+          {ringraziamenti.map((r) => (
+            <li class="thanks-item">
+              <span class="thanks-item__name">{r.nome}</span>
+              <span class="thanks-item__text">{r.testo}</span>
+            </li>
+          ))}
+        </ul>
       </div>
     </div>
   </section>
@@ -176,6 +208,51 @@ const iban = 'IT28B0501801600000020002214';
 
   .copy-btn.copied {
     background-color: var(--color-dark);
+  }
+
+  /* Ringraziamenti */
+  .sostienici__thanks {
+    margin-top: 4rem;
+    max-width: 720px;
+  }
+
+  .sostienici__thanks h2 {
+    font-size: 1.15rem;
+    margin-bottom: 0.8rem;
+  }
+
+  .sostienici__thanks-intro {
+    font-size: 0.95rem;
+    line-height: 1.8;
+    color: var(--color-dark);
+    margin-bottom: 2rem;
+    max-width: none;
+  }
+
+  .thanks-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  .thanks-item {
+    border-left: 3px solid var(--color-accent);
+    padding: 0.4rem 0 0.4rem 1.25rem;
+  }
+
+  .thanks-item__name {
+    display: block;
+    font-weight: 700;
+    color: var(--color-black);
+    margin-bottom: 0.25rem;
+  }
+
+  .thanks-item__text {
+    display: block;
+    font-size: 0.95rem;
+    line-height: 1.75;
+    color: var(--color-dark);
   }
 
 </style>
