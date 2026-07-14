@@ -1,0 +1,70 @@
+---
+import content from '../data/content.json';
+const { label = '', title = '', groups = [] } = content.useful_links ?? {};
+---
+
+<section class="section section--alt">
+  <div class="container">
+    <span class="section-label">{label}</span>
+    <h2 class="section-title">{title}</h2>
+    <div class="links__grid">
+      {groups.map((group: { heading: string; links: { text: string; url: string }[] }) => (
+        <div class="links__group">
+          <h3 class="links__heading">{group.heading}</h3>
+          <ul class="links__list">
+            {group.links.map((link: { text: string; url: string }) => (
+              <li>
+                <a href={link.url} target="_blank" rel="noopener noreferrer">{link.text}</a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .links__grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 3rem;
+    margin-top: 2rem;
+  }
+
+  .links__heading {
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--color-gray);
+    margin-bottom: 1.2rem;
+    padding-bottom: 0.6rem;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .links__list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+  }
+
+  .links__list a {
+    color: var(--color-accent);
+    font-size: 0.95rem;
+    transition: color 0.2s;
+  }
+
+  .links__list a:hover {
+    color: var(--color-accent-hover);
+    text-decoration: underline;
+  }
+
+  @media (max-width: 768px) {
+    .links__grid {
+      grid-template-columns: 1fr;
+      gap: 2.5rem;
+    }
+  }
+</style>

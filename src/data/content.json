@@ -142,5 +142,27 @@
     "email": "info@rifugiorosmini.it",
     "facebook_url": "https://www.facebook.com/rifugiorosmini/",
     "instagram_url": "https://www.instagram.com/rifugiorosmini_alpeveglia"
+  },
+  "useful_links": {
+    "label": "Link utili",
+    "title": "Link e risorse",
+    "groups": [
+      {
+        "heading": "Link istituzionali",
+        "links": [
+          { "text": "Parco Alpe Veglia e Alpe Devero", "url": "https://www.areeprotetteossola.it/" },
+          { "text": "Comune di Varzo", "url": "https://www.comune.varzo.vb.it/" },
+          { "text": "Club Alpino Italiano (CAI)", "url": "https://www.cai.it/" }
+        ]
+      },
+      {
+        "heading": "Montagna e dintorni",
+        "links": [
+          { "text": "Meteo montagna — ARPA Piemonte", "url": "https://www.arpa.piemonte.it/" },
+          { "text": "Bollettino valanghe — AINEVA", "url": "https://www.aineva.it/" },
+          { "text": "Soccorso Alpino (CNSAS) — emergenze 112", "url": "https://www.cnsas.it/" }
+        ]
+      }
+    ]
   }
 }

@@ -168,6 +168,18 @@
     <input type="text" id="footer-email">
   </div>
 
+  <!-- LINK UTILI -->
+  <div class="section">
+    <h2>Link utili</h2>
+    <label>Etichetta sezione</label>
+    <input type="text" id="links-label">
+    <label>Titolo</label>
+    <input type="text" id="links-title">
+    <label>Gruppi di link</label>
+    <div id="links-groups"></div>
+    <button class="btn btn-small" onclick="addLinkGroup()">+ Aggiungi gruppo</button>
+  </div>
+
   <!-- DEPLOY LOG -->
   <div class="deploy-log" id="deploy-log"></div>
 
@@ -221,6 +233,12 @@ function render() {
   // Footer
   document.getElementById('footer-desc').value = content.footer.description;
   document.getElementById('footer-email').value = content.footer.email;
+
+  // Link utili (difesa per JSON vecchi senza la chiave)
+  if (!content.useful_links) content.useful_links = { label: '', title: '', groups: [] };
+  document.getElementById('links-label').value = content.useful_links.label;
+  document.getElementById('links-title').value = content.useful_links.title;
+  renderLinkGroups();
 }
 
 // ---------- PARAGRAPHS ----------
@@ -330,6 +348,29 @@ function renderRules() {
 }
 function addRule() { content.rules.items.push(''); renderRules(); }
 
+// ---------- LINK UTILI ----------
+function renderLinkGroups() {
+  const el = document.getElementById('links-groups');
+  el.innerHTML = content.useful_links.groups.map((g, gi) => `
+    <div class="step-card">
+      <div class="rule-item">
+        <input type="text" value="${esc(g.heading)}" placeholder="Titolo gruppo" oninput="content.useful_links.groups[${gi}].heading=this.value">
+        <button class="btn btn-danger" onclick="content.useful_links.groups.splice(${gi},1);renderLinkGroups()" title="Rimuovi gruppo">✕</button>
+      </div>
+      ${g.links.map((lnk, li) => `
+        <div class="detail-item">
+          <input type="text" value="${esc(lnk.text)}" placeholder="Testo" oninput="content.useful_links.groups[${gi}].links[${li}].text=this.value">
+          <input type="text" value="${esc(lnk.url)}" placeholder="URL (https://...)" oninput="content.useful_links.groups[${gi}].links[${li}].url=this.value">
+          <button class="btn btn-danger" onclick="content.useful_links.groups[${gi}].links.splice(${li},1);renderLinkGroups()">✕</button>
+        </div>
+      `).join('')}
+      <button class="btn btn-small" onclick="addLink(${gi})">+ Aggiungi link</button>
+    </div>
+  `).join('');
+}
+function addLinkGroup() { content.useful_links.groups.push({ heading: '', links: [] }); renderLinkGroups(); }
+function addLink(gi) { content.useful_links.groups[gi].links.push({ text: '', url: '' }); renderLinkGroups(); }
+
 // ---------- COLLECT & SAVE ----------
 function collect() {
   content.hero.title = document.getElementById('hero-title').value;
@@ -355,6 +396,9 @@ function collect() {
 
   content.footer.description = document.getElementById('footer-desc').value;
   content.footer.email = document.getElementById('footer-email').value;
+
+  content.useful_links.label = document.getElementById('links-label').value;
+  content.useful_links.title = document.getElementById('links-title').value;
 }
 
 async function save() {

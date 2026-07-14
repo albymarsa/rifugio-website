@@ -84,3 +84,52 @@ test.describe('Content binding (CMS → home)', () => {
     expect(rel).toContain('noopener');
   });
 });
+
+/**
+ * Regressione: la sezione "Link utili" DEVE leggere gruppi e link da
+ * src/data/content.json (gestibile dal CMS) e mostrarli in fondo alla home.
+ * I link esterni devono aprirsi in una nuova scheda con rel noopener.
+ */
+test.describe('Useful links section', () => {
+  const useful = content.useful_links;
+  const totalLinks = useful.groups.reduce(
+    (n: number, g: { links: unknown[] }) => n + g.links.length,
+    0
+  );
+
+  test('section title matches content.json', async ({ page }) => {
+    await page.goto('/');
+    const section = page.locator('section', { has: page.locator('.links__grid') });
+    await expect(section.locator('.section-title')).toHaveText(useful.title);
+  });
+
+  test('renders all link groups from content.json', async ({ page }) => {
+    await page.goto('/');
+    await expect(page.locator('.links__group')).toHaveCount(useful.groups.length);
+  });
+
+  test('renders all links from content.json', async ({ page }) => {
+    await page.goto('/');
+    await expect(page.locator('.links__list a')).toHaveCount(totalLinks);
+  });
+
+  test('first link has the text and href from content.json', async ({ page }) => {
+    await page.goto('/');
+    const first = useful.groups[0].links[0];
+    const link = page.locator('.links__list a').first();
+    await expect(link).toHaveText(first.text);
+    await expect(link).toHaveAttribute('href', first.url);
+  });
+
+  test('all links open in a new tab with rel noopener', async ({ page }) => {
+    await page.goto('/');
+    const links = page.locator('.links__list a');
+    await expect(links).toHaveCount(totalLinks);
+    for (let i = 0; i < totalLinks; i++) {
+      const link = links.nth(i);
+      await expect(link).toHaveAttribute('target', '_blank');
+      const rel = await link.getAttribute('rel');
+      expect(rel).toContain('noopener');
+    }
+  });
+});
