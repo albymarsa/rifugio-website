@@ -28,6 +28,15 @@ const {
   showCancel = false,
   showConsent = true,
 } = Astro.props;
+
+/**
+ * Il documento è obbligatorio solo per i soci nuovi. In modifica resta facoltativo,
+ * altrimenti le schede registrate prima di questa regola non sarebbero più
+ * correggibili: solo il referente che le ha inserite può modificarle, e dal pannello
+ * di amministrazione l'unica azione disponibile è l'eliminazione.
+ * Stessa regola lato server in src/pages/api/soci/index.ts (POST sì, PUT no).
+ */
+const isNewMember = !member.id;
 ---
 
 <form id={formId} class="member-form" novalidate>
@@ -78,8 +87,8 @@ const {
 
   <div class="form-row">
     <div class="form-group">
-      <label for={`${formId}-tipo_doc`}>Tipo documento</label>
-      <select id={`${formId}-tipo_doc`} name="tipo_documento">
+      <label for={`${formId}-tipo_doc`}>Tipo documento{isNewMember ? ' *' : ''}</label>
+      <select id={`${formId}-tipo_doc`} name="tipo_documento" required={isNewMember}>
         <option value="">— Seleziona —</option>
         <option value="carta_identita" selected={member.tipo_documento === 'carta_identita'}>Carta d'identit&agrave;</option>
         <option value="patente" selected={member.tipo_documento === 'patente'}>Patente</option>
@@ -87,8 +96,8 @@ const {
       </select>
     </div>
     <div class="form-group">
-      <label for={`${formId}-numero_doc`}>Numero documento</label>
-      <input type="text" id={`${formId}-numero_doc`} name="numero_documento" value={member.numero_documento || ''} />
+      <label for={`${formId}-numero_doc`}>Numero documento{isNewMember ? ' *' : ''}</label>
+      <input type="text" id={`${formId}-numero_doc`} name="numero_documento" required={isNewMember} value={member.numero_documento || ''} />
     </div>
   </div>
 

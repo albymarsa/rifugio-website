@@ -2,7 +2,7 @@ export const prerender = false;
 
 import type { APIRoute } from 'astro';
 import { getAuthenticatedClient, jsonError, jsonOk } from '../../../lib/auth';
-import { validateMemberRequired, validateMemberFieldLengths, validateConsents } from '../../../lib/member-validation';
+import { validateMemberRequired, validateMemberFieldFormat, validateMemberFieldLengths, validateMemberDocument, validateConsents } from '../../../lib/member-validation';
 import { canEditMember } from '../../../lib/member-ownership';
 import { checkCsrf } from '../../../lib/csrf';
 
@@ -114,6 +114,12 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     const requiredCheck = validateMemberRequired(memberData.nome, memberData.cognome, memberData.email);
     if (!requiredCheck.ok) return jsonError(requiredCheck.error, 400);
 
+    const formatCheck = validateMemberFieldFormat(memberData);
+    if (!formatCheck.ok) return jsonError(formatCheck.error, 400);
+
+    const documentCheck = validateMemberDocument(memberData);
+    if (!documentCheck.ok) return jsonError(documentCheck.error, 400);
+
     const lengthCheck = validateMemberFieldLengths(memberData);
     if (!lengthCheck.ok) return jsonError(lengthCheck.error, 400);
 
@@ -170,6 +176,13 @@ export const PUT: APIRoute = async ({ request, cookies }) => {
     const requiredCheck = validateMemberRequired(updateData.nome, updateData.cognome, updateData.email);
     if (!requiredCheck.ok) return jsonError(requiredCheck.error, 400);
 
+    const formatCheck = validateMemberFieldFormat(updateData);
+    if (!formatCheck.ok) return jsonError(formatCheck.error, 400);
+
+    // Il documento è obbligatorio solo per i soci nuovi (vedi POST sopra), non in
+    // modifica: imporlo anche qui renderebbe non correggibili le schede registrate
+    // prima di questa regola, dato che solo il referente che le ha inserite può
+    // modificarle e il pannello di amministrazione espone la sola eliminazione.
     const lengthCheck = validateMemberFieldLengths(updateData);
     if (!lengthCheck.ok) return jsonError(lengthCheck.error, 400);
 

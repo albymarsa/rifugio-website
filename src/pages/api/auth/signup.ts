@@ -2,7 +2,8 @@ export const prerender = false;
 
 import type { APIRoute } from 'astro';
 import { createAnonClient } from '../../../lib/supabase';
-import { setAuthCookies } from '../../../lib/auth';
+import { jsonError, setAuthCookies } from '../../../lib/auth';
+import { validateMemberFieldFormat, validateMemberFieldLengths } from '../../../lib/member-validation';
 
 export const POST: APIRoute = async ({ request, cookies }) => {
   try {
@@ -14,6 +15,17 @@ export const POST: APIRoute = async ({ request, cookies }) => {
         headers: { 'Content-Type': 'application/json' },
       });
     }
+
+    // Questo è il vero punto d'ingresso dei dati di profilo (l'unico chiamato dal
+    // sito) ed è pubblico: valida prima di creare l'utente su Supabase, per non
+    // lasciare account orfani. I valori finiscono in PDF, export XLSX e notifiche.
+    const profileData = { nome, cognome, email, telefono };
+
+    const formatCheck = validateMemberFieldFormat(profileData);
+    if (!formatCheck.ok) return jsonError(formatCheck.error, 400);
+
+    const lengthCheck = validateMemberFieldLengths(profileData);
+    if (!lengthCheck.ok) return jsonError(lengthCheck.error, 400);
 
     const supabase = createAnonClient();
 
