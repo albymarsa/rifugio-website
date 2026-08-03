@@ -1,0 +1,6 @@
+User-agent: *
+Disallow: /soci/
+Disallow: /prenota
+Disallow: /api/
+
+Sitemap: https://www.rifugiorosmini.it/sitemap-index.xml
