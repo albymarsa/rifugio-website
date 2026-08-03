@@ -90,7 +90,8 @@
       const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
       const occupied = occupazione[dateStr] || 0;
       const isPast = dateStr < todayStr;
-      const isClosed = month + 1 < 6 || month + 1 > 10;
+      const calMonth = month + 1;
+      const isClosed = calMonth < 6 || calMonth > 9 || (calMonth === 9 && day >= 28);
 
       const cell = document.createElement('div');
       cell.className = 'calendario__day';

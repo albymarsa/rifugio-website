@@ -45,27 +45,31 @@ describe('validateBookingDates', () => {
     expect(validateBookingDates('2026-07-10', '2026-07-11', null).ok).toBe(true);
   });
 
-  it('rejects dates in the closed season (Nov-May)', () => {
+  it('rejects dates in the closed season (28 Sep-May)', () => {
     expect(validateBookingDates('2026-12-20', '2026-12-22').ok).toBe(false);
     expect(validateBookingDates('2026-03-10', '2026-03-12').ok).toBe(false);
     expect(validateBookingDates('2026-05-30', '2026-06-02').ok).toBe(false);
+    expect(validateBookingDates('2026-09-28', '2026-09-30').ok).toBe(false);
+    expect(validateBookingDates('2026-10-05', '2026-10-08').ok).toBe(false);
   });
 
-  it('accepts a check-out on November 1 (last night Oct 31 still open)', () => {
-    expect(validateBookingDates('2026-10-30', '2026-11-01').ok).toBe(true);
+  it('accepts a check-out on September 28 (last night Sep 27 still open)', () => {
+    expect(validateBookingDates('2026-09-26', '2026-09-28').ok).toBe(true);
   });
 });
 
 describe('isClosedDate', () => {
-  it('marks November-May as closed', () => {
+  it('marks 28 September-May as closed', () => {
     expect(isClosedDate('2026-01-15')).toBe(true);
     expect(isClosedDate('2026-05-31')).toBe(true);
+    expect(isClosedDate('2026-09-28')).toBe(true);
+    expect(isClosedDate('2026-10-15')).toBe(true);
     expect(isClosedDate('2026-11-01')).toBe(true);
     expect(isClosedDate('2026-12-25')).toBe(true);
   });
-  it('marks June-October as open', () => {
+  it('marks June-27 September as open', () => {
     expect(isClosedDate('2026-06-01')).toBe(false);
     expect(isClosedDate('2026-08-15')).toBe(false);
-    expect(isClosedDate('2026-10-31')).toBe(false);
+    expect(isClosedDate('2026-09-27')).toBe(false);
   });
 });

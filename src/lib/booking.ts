@@ -7,12 +7,13 @@
 export const CAPACITA = 25;
 
 /**
- * Il rifugio è aperto solo da giugno a ottobre inclusi.
- * Ritorna true per i giorni in cui la struttura è chiusa (novembre–maggio).
+ * Il rifugio è aperto solo da giugno al 27 settembre inclusi.
+ * Ritorna true per i giorni in cui la struttura è chiusa (28 settembre–maggio).
  */
 export function isClosedDate(dateStr: string): boolean {
   const month = Number(dateStr.slice(5, 7));
-  return month < 6 || month > 10;
+  const day = Number(dateStr.slice(8, 10));
+  return month < 6 || month > 9 || (month === 9 && day >= 28);
 }
 
 export type ValidationResult = { ok: true } | { ok: false; error: string };
@@ -40,13 +41,13 @@ export function validateBookingDates(
   if (note != null && typeof note === 'string' && note.length > 2000) {
     return { ok: false, error: 'Note troppo lunghe (max 2000 caratteri)' };
   }
-  // Stagione: il rifugio è aperto solo giugno–ottobre. La data di partenza
+  // Stagione: il rifugio è aperto solo giugno–27 settembre. La data di partenza
   // è esclusiva (check-out), quindi il vincolo è sull'ultima notte = partenza - 1 giorno.
   const ultimaNotte = prevDay(data_partenza);
   if (isClosedDate(data_arrivo) || isClosedDate(ultimaNotte)) {
     return {
       ok: false,
-      error: 'Il rifugio è chiuso da novembre a maggio. Seleziona date tra giugno e ottobre.',
+      error: 'Il rifugio è chiuso dal 28 settembre a maggio. Seleziona date tra giugno e il 27 settembre.',
     };
   }
   return { ok: true };
