@@ -6,7 +6,7 @@
     "node": "22.x"
   },
   "scripts": {
-    "dev": "astro dev",
+    "dev": "node --env-file-if-exists=.env ./node_modules/.bin/astro dev",
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
@@ -23,13 +23,12 @@
     "@supabase/supabase-js": "^2.99.1",
     "@vercel/analytics": "^2.0.1",
     "astro": "^6.0.4",
-    "nodemailer": "^8.0.5",
     "pdf-lib": "^1.17.1",
     "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
   },
   "devDependencies": {
     "@playwright/test": "^1.48.0",
-    "@types/nodemailer": "^8.0.0",
+    "@types/node": "^26.1.2",
     "vitest": "^2.1.0"
   }
 }

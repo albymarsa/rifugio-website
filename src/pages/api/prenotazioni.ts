@@ -89,10 +89,8 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       const mailResult = await sendBookingNotification({
         richiedente_nome: `${profilo.nome} ${profilo.cognome}`,
         richiedente_email: profilo.email,
-        richiedente_telefono: profilo.telefono || null,
         data_arrivo,
         data_partenza,
-        note: note || null,
       });
       if (!mailResult.ok) {
         console.error('[API prenotazioni] Invio mail fallito:', mailResult.errorCode ?? 'UNKNOWN');

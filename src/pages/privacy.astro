@@ -61,6 +61,12 @@ import Layout from '../layouts/Layout.astro';
           con sede nell'Unione Europea. L'accesso ai dati è protetto da autenticazione e le comunicazioni
           sono crittografate tramite protocollo HTTPS.
         </p>
+        <p>
+          Per avvisare i gestori dell'arrivo di una nuova richiesta di prenotazione, il sito si avvale del
+          servizio di invio email <strong>Resend</strong>. La notifica contiene i soli dati necessari a
+          identificare la richiesta (nome del richiedente e date del soggiorno); recapiti ed eventuali note
+          restano consultabili unicamente nell'area riservata del sito.
+        </p>
 
         <h2>5. Periodo di conservazione</h2>
         <p>
@@ -78,14 +84,25 @@ import Layout from '../layouts/Layout.astro';
         </p>
         <ul>
           <li>Soci fondatori dell'associazione, esclusivamente per la gestione operativa</li>
-          <li>Fornitori di servizi tecnici (hosting, database) nel rispetto del GDPR</li>
+          <li>
+            Fornitori di servizi tecnici che agiscono come responsabili del trattamento ai sensi
+            dell'art. 28 GDPR: <strong>Supabase</strong> (database e autenticazione),
+            <strong>Vercel</strong> (hosting del sito) e <strong>Resend</strong> (invio delle email
+            di notifica)
+          </li>
           <li>Autorità competenti, nei casi previsti dalla legge</li>
         </ul>
 
         <h2>7. Trasferimento dei dati</h2>
         <p>
           I dati personali sono conservati su server situati nell'Unione Europea.
-          Non è previsto alcun trasferimento di dati verso Paesi terzi al di fuori dello Spazio Economico Europeo.
+        </p>
+        <p>
+          Alcuni dei fornitori di servizi tecnici indicati al punto 6 sono società con sede negli Stati Uniti
+          d'America. Pur essendo i dati archiviati su infrastrutture situate nell'Unione Europea, non è
+          possibile escludere un accesso ai medesimi da parte di tali società. Il trasferimento avviene sulla
+          base delle Clausole Contrattuali Tipo approvate dalla Commissione Europea e, ove applicabile, del
+          Data Privacy Framework UE-USA, con le garanzie adeguate previste dagli articoli 44 e seguenti del GDPR.
         </p>
 
         <h2>8. Diritti dell'interessato</h2>

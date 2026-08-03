@@ -300,7 +300,7 @@ CREATE POLICY "delete_own" ON prenotazioni_soci FOR DELETE
    PUBLIC_SUPABASE_ANON_KEY=eyJ...la-tua-chiave...
    ```
 4. **Importante**: questo file NON va caricato su GitHub (e' gia' nel .gitignore)
-5. Per il deploy su Cloudflare: vai nelle impostazioni del progetto su Cloudflare Pages > **Environment variables** e aggiungi le stesse variabili
+5. Per il sito pubblicato: vai nelle impostazioni del progetto su Vercel > **Settings** > **Environment Variables** e aggiungi le stesse variabili (sia in *Production* sia in *Preview*), poi ridispiega
 
 ### Passo 8: Registra i soci fondatori
 
@@ -308,6 +308,68 @@ CREATE POLICY "delete_own" ON prenotazioni_soci FOR DELETE
 2. Dopo la registrazione, vai nel pannello Supabase > **Table Editor** > tabella `soci`
 3. Trova la riga del socio fondatore e modifica `tipo_socio` da `ordinario` a `fondatore`
 4. Ripeti per ogni socio fondatore
+
+---
+
+## Come configurare le notifiche email delle prenotazioni
+
+Quando un socio invia una richiesta di prenotazione, il sito manda una mail di
+avviso ai gestori. L'invio passa da **Resend** (piano gratuito: 3.000 mail al mese,
+massimo 100 al giorno).
+
+### Passo 1: Account e dominio su Resend
+
+1. Registrati su [resend.com](https://resend.com) usando `amicidelveglia@gmail.com`
+   come email dell'account
+2. Aggiungi il dominio usando un **sottodominio dedicato**, es. `send.rifugiorosmini.it`.
+   Serve a non toccare i record MX e SPF esistenti di Aruba: la casella
+   `info@rifugiorosmini.it` continua a ricevere posta esattamente come prima
+3. Inserisci i record DNS indicati da Resend nel pannello Aruba (area dominio →
+   gestione DNS) e aspetta che il dominio risulti verificato
+4. Crea una **API key** con permesso di solo invio
+
+### Passo 2: Variabili d'ambiente
+
+| Variabile | A cosa serve | Se non la imposti |
+|---|---|---|
+| `RESEND_API_KEY` | la chiave creata al passo 1 | nessuna mail viene inviata (la prenotazione si salva comunque) |
+| `BOOKING_NOTIFY_FROM` | indirizzo mittente, **obbligatorio** | nessuna mail viene inviata |
+| `BOOKING_NOTIFY_TO` | destinatari, separati da virgola | `amicidelveglia@gmail.com` |
+| `EMAIL_DRY_RUN` | se vale `1`, stampa la mail nel terminale invece di spedirla; funziona **solo in sviluppo** | disattivato |
+
+Vanno messe sia nel `.env` locale sia nelle **Environment Variables** del progetto
+su Vercel (sia in *Production* sia in *Preview*).
+
+Gli indirizzi in `BOOKING_NOTIFY_TO` devono essere **nudi**, separati da virgola:
+`uno@esempio.it,due@esempio.it`. Il formato con nome — `Gestori <uno@esempio.it>` —
+viene scartato e le notifiche non partono.
+
+### Tre avvertenze importanti
+
+- **Il mittente deve appartenere a un dominio verificato su Resend.** Con il solo
+  sottodominio verificato l'indirizzo va scelto su `@send.rifugiorosmini.it`: un
+  mittente `@rifugiorosmini.it` verrebbe rifiutato.
+- **Finché il dominio non è verificato**, il mittente di prova `onboarding@resend.dev`
+  recapita *solo* all'indirizzo con cui è registrato l'account Resend, e Resend
+  rifiuta l'intera richiesta se anche un solo destinatario è diverso. In quella fase
+  `BOOKING_NOTIFY_TO` deve contenere il solo `amicidelveglia@gmail.com`; si aggiunge
+  `info@rifugiorosmini.it` a verifica completata.
+- **Un fallimento è silenzioso per chi prenota**: la richiesta viene salvata comunque
+  e l'unico segnale è una riga `[EMAIL]` nei log di Vercel. Sul piano gratuito di
+  Resend lo storico degli invii dura circa un giorno, quindi conviene controllare
+  presto quando qualcosa non torna.
+
+### Perché la chiave si legge da `process.env`
+
+`src/lib/email.ts` legge le variabili **solo** da `process.env`, mai da
+`import.meta.env`. Il motivo: Astro sostituisce `import.meta.env.NOME` con il valore
+letterale al momento della compilazione, e un segreto letto per quella via finirebbe
+scritto in chiaro dentro `dist/` e `.vercel/output`. Per questo lo script `dev` di
+`package.json` carica il file `.env` con `node --env-file-if-exists`.
+
+Se in passato hai compilato il sito con dei segreti nel `.env`, quelle cartelle
+possono contenerli: cancellale con `rm -rf .vercel/output dist` e cambia le
+credenziali interessate.
 
 ---
 
@@ -338,17 +400,18 @@ Per l'immagine grande dell'hero in homepage, aggiungi un file chiamato `hero.jpg
 
 ---
 
-## Come pubblicare il sito online (Cloudflare Pages)
+## Come pubblicare il sito online (Vercel)
 
-1. Carica il progetto su GitHub (crea un nuovo repository e fai push)
-2. Vai su [Cloudflare Pages](https://pages.cloudflare.com)
-3. Crea un account gratuito se non ce l'hai
-4. Clicca "Create a project" e collega il tuo repository GitHub
-5. Nelle impostazioni di build:
-   - Framework: **Astro**
-   - Comando di build: `npm run build`
-   - Directory di output: `dist`
-6. Clicca "Save and Deploy"
+Il sito è ospitato su **Vercel** e risponde su `www.rifugiorosmini.it`.
 
-Il sito sarà disponibile su un indirizzo tipo `nome-progetto.pages.dev`.
-Quando avrete il dominio, potrete collegarlo dalle impostazioni di Cloudflare.
+Non serve alcun comando: **ogni `git push` sul ramo `main` pubblica il sito dal
+vivo**. Vercel se ne accorge da solo e ridispiega in un paio di minuti.
+
+- **Variabili d'ambiente:** progetto su Vercel > **Settings** > **Environment
+  Variables**. Vanno impostate sia in *Production* sia in *Preview*. Attenzione:
+  aggiungere o modificare una variabile **non ha effetto finché non si ridispiega**.
+- **Tornare indietro:** progetto su Vercel > **Deployments**, si sceglie l'ultima
+  versione funzionante e si usa **Promote to Production**.
+
+> Nota storica: in origine il sito era pensato per Cloudflare Pages. Non è più così,
+> e la cartella `.wrangler/` rimasta nella radice del progetto è un residuo inutile.
