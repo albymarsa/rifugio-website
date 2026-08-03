@@ -107,6 +107,20 @@ describe('validateMemberFieldFormat', () => {
     expect(validateMemberFieldFormat({ data_nascita: { a: 1 } }).ok).toBe(false);
   });
 
+  it('rifiuta un indirizzo email malformato', () => {
+    for (const v of ['mario', 'mario@', '@example.com', 'mario@example', 'mario rossi@example.com']) {
+      const r = validateMemberFieldFormat({ email: v });
+      expect(r.ok, `atteso rifiuto per ${v}`).toBe(false);
+      if (!r.ok) expect(r.error).toContain('email');
+    }
+  });
+
+  it('accetta indirizzi email validi, anche con punti e segni piu', () => {
+    for (const v of ['mario@example.com', 'mario.rossi+soci@example.co.uk']) {
+      expect(validateMemberFieldFormat({ email: v }).ok, v).toBe(true);
+    }
+  });
+
   it('ignora campi non anagrafici', () => {
     const r = validateMemberFieldFormat({ registrato_da: { id: 1 }, nome: 'Mario' });
     expect(r.ok).toBe(true);

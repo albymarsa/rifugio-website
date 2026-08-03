@@ -11,6 +11,13 @@ const MAX_LENGTHS: Record<string, number> = {
   numero_documento: 50,
 };
 
+/**
+ * Formato accettato per un indirizzo email. Volutamente permissiva: serve a
+ * intercettare gli errori di battitura, non a decidere se la casella esiste.
+ * Riusata da `src/lib/email.ts` per validare i destinatari delle notifiche.
+ */
+export const EMAIL_FORMAT = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 /** Una stringa di soli spazi vale come campo non compilato. */
 function isBlank(value: unknown): boolean {
   return value === null || value === undefined || (typeof value === 'string' && value.trim() === '');
@@ -90,6 +97,11 @@ export function validateMemberFieldFormat(
     }
     if (CONTROL_CHARS.test(val)) {
       return { ok: false, error: `Campo ${field} contiene caratteri non ammessi` };
+    }
+    // Un indirizzo malformato passava fino a database, dove esiste un indice unico:
+    // finiva poi nell'export, nei PDF e in ogni tentativo di contatto.
+    if (field === 'email' && !EMAIL_FORMAT.test(val)) {
+      return { ok: false, error: 'Indirizzo email non valido' };
     }
   }
 

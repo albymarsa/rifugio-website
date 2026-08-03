@@ -1,3 +1,5 @@
+import { EMAIL_FORMAT } from './member-validation';
+
 export interface BookingEmailPayload {
   richiedente_nome: string;
   richiedente_email: string;
@@ -11,7 +13,6 @@ export interface EmailResult {
   errorCode?: string;
 }
 
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const RESEND_ENDPOINT = 'https://api.resend.com/emails';
 const DEFAULT_NOTIFY_TO = 'amicidelveglia@gmail.com';
 const SEND_TIMEOUT_MS = 10_000;
@@ -72,7 +73,7 @@ export async function sendBookingNotification(
       return { ok: false, error: 'no_recipients', errorCode: 'NO_RECIPIENTS' };
     }
 
-    const replyTo = EMAIL_REGEX.test(payload.richiedente_email)
+    const replyTo = EMAIL_FORMAT.test(payload.richiedente_email)
       ? payload.richiedente_email
       : undefined;
 
@@ -124,7 +125,7 @@ export function parseRecipients(raw: string): string[] {
   return raw
     .split(',')
     .map((address) => address.trim())
-    .filter((address) => EMAIL_REGEX.test(address));
+    .filter((address) => EMAIL_FORMAT.test(address));
 }
 
 /** Rimuove i caratteri di a capo e limita la lunghezza dell'oggetto. */
