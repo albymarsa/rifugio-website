@@ -10,6 +10,8 @@ interface Props {
 }
 
 const { title, description = 'Rifugio alpino nel cuore delle montagne. Prenota il tuo posto per vivere un\'esperienza autentica in alta quota.' } = Astro.props;
+
+const canonicalURL = new URL(Astro.url.pathname, 'https://www.rifugiorosmini.it').href;
 ---
 
 <!doctype html>
@@ -19,9 +21,10 @@ const { title, description = 'Rifugio alpino nel cuore delle montagne. Prenota i
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content={description} />
     <meta name="google-site-verification" content="V72e_A5k22cHNvU8_IuOWSqZTVfsSl7vK24ho_LIliY" />
+    <link rel="canonical" href={canonicalURL} />
     <!-- Open Graph / WhatsApp -->
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://www.rifugiorosmini.it/" />
+    <meta property="og:url" content={canonicalURL} />
     <meta property="og:title" content="Rifugio Rosmini — Alpe Veglia" />
     <meta property="og:description" content={description} />
     <meta property="og:image" content="https://www.rifugiorosmini.it/images/hero.jpeg" />
