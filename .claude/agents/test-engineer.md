@@ -51,7 +51,7 @@ Config: `playwright.config.ts` — `webServer: npm run dev`, baseURL `http://loc
 | File spec | Cosa copre |
 |---|---|
 | `tests/e2e/api.spec.ts` | `/api/disponibilita` shape e validazione; CSRF 403 su `/api/prenotazioni`; CSRF 403 + 401 senza cookie su POST/PUT/DELETE `/api/soci` |
-| `tests/e2e/home.spec.ts` | Home, login, privacy renderizzano; `/soci/` redirige al login |
+| `tests/e2e/home.spec.ts` | Home, login, privacy renderizzano; `/soci/` redirige al login; presenza del meta `google-site-verification` (se rimosso, la verifica Search Console decade in silenzio) |
 | `tests/e2e/content-binding.spec.ts` | Hero title/subtitle/CTA e InfoSection title/paragrafo corrispondono a `src/data/content.json` |
 
 ---
@@ -118,6 +118,7 @@ Gli hook funzionano solo dentro una sessione Claude Code attiva su questa macchi
 | Regressione | Commit | Coperta da |
 |---|---|---|
 | Hero/InfoSection senza testo in prod (file non committato) | f9912c3 | `content-binding.spec.ts` |
+| Rimozione del meta di verifica Search Console (decadimento silenzioso) | 83e80e5 | `home.spec.ts` |
 | Errori form prenotazione non visibili | 3dd603d | `api.spec.ts` (401/403) |
 | CSRF mancante su POST prenotazioni | 0cbb214 | `csrf.test.ts` + `api.spec.ts` |
 

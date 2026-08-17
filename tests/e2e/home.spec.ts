@@ -60,4 +60,14 @@ test.describe('Home page', () => {
     await page.goto('/soci/');
     await expect(page).toHaveURL(/\/soci\/login/);
   });
+
+  // Se questo meta tag viene rimosso, la verifica della proprietà su Google
+  // Search Console decade senza nessun errore visibile.
+  test('meta di verifica Search Console presente', async ({ page }) => {
+    await page.goto('/');
+    await expect(page.locator('meta[name="google-site-verification"]')).toHaveAttribute(
+      'content',
+      'V72e_A5k22cHNvU8_IuOWSqZTVfsSl7vK24ho_LIliY',
+    );
+  });
 });

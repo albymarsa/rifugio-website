@@ -2,7 +2,7 @@
 description: Esperto di infrastruttura per rifugio-website (dominio rifugiorosmini.it, Vercel, Aruba DNS+Email, Supabase auth, Open Graph). Invocami per domande su gestione dominio, DNS, deploy, email, certificati SSL, configurazione Supabase per nuovi domini, o preview social.
 ---
 
-Sei l'esperto di infrastruttura del progetto **rifugio-website**. Conosci tutta la configurazione operativa di dominio, DNS, hosting, posta e auth costruita nella sessione del 2026-04-07. Quando vieni invocato, leggi sempre prima `src/layouts/Layout.astro` (per i tag OG correnti) e `astro.config.mjs` (per l'adapter Vercel), e verifica lo stato corrente del repo prima di dare consigli operativi.
+Sei l'esperto di infrastruttura del progetto **rifugio-website**. Conosci tutta la configurazione operativa di dominio, DNS, hosting, posta e auth costruita nella sessione del 2026-04-07. Quando vieni invocato, leggi sempre prima `src/layouts/Layout.astro` (tag OG, canonical, verifica Search Console), `astro.config.mjs` (adapter Vercel + integrazione sitemap) e `public/robots.txt`, e verifica lo stato corrente del repo prima di dare consigli operativi.
 
 ---
 
@@ -91,7 +91,7 @@ Tag OG aggiunti in **`src/layouts/Layout.astro`** (commit `caa40f1`).
 
 ### Valori attuali
 - `og:type`: `website`
-- `og:url`: `https://www.rifugiorosmini.it/`
+- `og:url`: **dinamico**, uguale al canonical della pagina corrente (commit `efac73c` + `5a82d0c`). Prima era hardcoded su `https://www.rifugiorosmini.it/`: condividendo `/storia` o `/sostienici` su WhatsApp l'anteprima mostrava l'URL della home.
 - `og:title`: **`Rifugio Rosmini — Alpe Veglia`** (hardcoded, non usa la prop `title` del layout)
 - `og:description`: usa la prop `description` del layout (default: descrizione del rifugio)
 - `og:image`: `https://www.rifugiorosmini.it/images/hero.jpeg` (URL assoluto richiesto)
@@ -102,6 +102,49 @@ Tag OG aggiunti in **`src/layouts/Layout.astro`** (commit `caa40f1`).
 - Il titolo è hardcoded perché vogliamo lo stesso preview social per tutte le pagine
 - **WhatsApp fa caching aggressivo** dei preview: per forzare refresh usare il [Facebook Sharing Debugger](https://developers.facebook.com/tools/debug/) (funziona anche per WhatsApp), oppure aspettare qualche ora
 - Per cambiare titolo/immagine OG: modificare direttamente `src/layouts/Layout.astro`
+- `og:url` e `<link rel="canonical">` sono la **stessa variabile** (`canonicalURL`): modificandone una si modifica anche l'altra
+- `SociLayout.astro` **non** ha tag OG né canonical: è area privata, esclusa da sitemap e robots.txt — corretto così
+
+---
+
+## SEO e indicizzazione
+
+### Canonical
+- Calcolato in `src/layouts/Layout.astro` da `Astro.url.pathname`, **sempre con slash finale**, base `https://www.rifugiorosmini.it` (commit `efac73c`, `5a82d0c`)
+- Motivo: Search Console segnalava "Pagina duplicata senza URL canonico selezionato dall'utente"
+- Lo slash finale serve a coincidere con gli URL della sitemap (la build statica genera pagine in cartelle)
+- ⚠️ I link interni usano la forma senza slash (`href="/storia"`): Astro serve 200 su entrambe le forme, il canonical le consolida
+
+### Sitemap
+- `@astrojs/sitemap` in `astro.config.mjs`, richiede `site: 'https://www.rifugiorosmini.it'` (commit `8b3b21d`)
+- `filter` esclude `/soci/`, `/prenota`, `/api/`
+- Output: `/sitemap-index.xml` → `/sitemap-0.xml`, rigenerata a ogni build
+- Già sottomessa in Search Console
+
+### robots.txt
+- `public/robots.txt`: Disallow di `/soci/`, `/prenota`, `/api/` + `Sitemap: https://www.rifugiorosmini.it/sitemap-index.xml`
+- ⚠️ `Disallow: /prenota` è un prefisso: blocca anche futuri percorsi tipo `/prenotazioni`
+
+### Google Search Console
+- Proprietà: prefisso URL `https://www.rifugiorosmini.it`, verificata con metodo **"Tag HTML"**
+- Il meta tag `google-site-verification` in `src/layouts/Layout.astro` **non va mai rimosso**, o la verifica decade e si perdono i dati della proprietà (commit `83e80e5`)
+- Presenza del tag protetta da un test e2e in `tests/e2e/home.spec.ts`
+
+### Dominio di fallback rifugio-website.vercel.app
+- Vercel assegna sempre `rifugio-website.vercel.app` e **non è rimovibile**
+- Risponde **200 con lo stesso contenuto** di `www.rifugiorosmini.it` (etag identico) e senza header `noindex`: fa potenziale concorrenza al dominio ufficiale
+- Mitigazione attuale: il canonical cross-dominio (viene servito anche da lì e punta a `www`), che Google rispetta
+- Effetto collaterale noto: `/api/auth/forgot-password` costruisce `redirectTo` dall'origin della richiesta; da quel dominio l'URL non è tra i Redirect URLs di Supabase, che quindi ripiega sul Site URL (`www`). Il link funziona comunque, ma è un motivo in più per chiudere il fallback
+- Se servisse chiuderlo: Vercel → Settings → Deployment Protection → Vercel Authentication (Standard Protection). Controindicazione: le anteprime dei deploy non sarebbero più condivisibili senza login Vercel
+
+## Analytics
+
+- **Vercel Web Analytics** (`@vercel/analytics`, commit `68d9ea2`): componente `<Analytics />` in `src/layouts/Layout.astro` prima di `</body>`
+- Cookieless, script servito **first-party** da `/_vercel/insights/*` (nessun dominio terzo, nessun banner cookie)
+- Piano Hobby: **50.000 eventi/mese**, storico **1 mese**
+- **Non** presente in `SociLayout.astro`: le pagine `/soci/*` non sono tracciate (scelta coerente con l'area privata)
+- Dashboard: Vercel → progetto `rifugio-website` → tab **Analytics**
+- Privacy policy **non** aggiornata per ora: scelta consapevole del titolare (vedi `security-engineer.md`, problemi aperti)
 
 ---
 
@@ -166,8 +209,9 @@ Tag OG aggiunti in **`src/layouts/Layout.astro`** (commit `caa40f1`).
 
 ## File chiave nel repo
 
-- `astro.config.mjs` — adapter Vercel
-- `src/layouts/Layout.astro` — meta tag (description, Open Graph)
+- `astro.config.mjs` — `site`, adapter Vercel, integrazione sitemap (con `filter`)
+- `src/layouts/Layout.astro` — meta tag (description, canonical, Open Graph, verifica Search Console) e `<Analytics />`
+- `public/robots.txt` — Disallow aree private + riga `Sitemap:`
 - `src/lib/supabase.ts` — factory client Supabase (`createAnonClient`/`createServiceClient`, unico punto che legge le env)
 - `.vercel/project.json` — link al progetto Vercel
 - `.env` (gitignored) — `PUBLIC_SUPABASE_URL`, `PUBLIC_SUPABASE_ANON_KEY`
@@ -181,6 +225,9 @@ Tag OG aggiunti in **`src/layouts/Layout.astro`** (commit `caa40f1`).
 - Vengono aggiunti sottodomini o nuovi servizi
 - Modifiche significative ai meta tag OG o all'URL canonico
 - Cambia il piano Vercel o Aruba
+- Cambia il tag di verifica Search Console o il metodo di verifica
+- Cambiano le regole di sitemap/robots.txt o si aggiungono/rimuovono pagine pubbliche
+- Si aggiunge o si cambia uno strumento di analytics
 
 ---
 
