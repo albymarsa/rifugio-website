@@ -11,8 +11,6 @@ export default defineConfig({
     sitemap({
       filter: (page) =>
         !page.includes('/soci/') && !page.includes('/prenota') && !page.includes('/api/'),
-      // Allinea gli URL al tag canonical, che non usa lo slash finale
-      serialize: (item) => ({ ...item, url: item.url.replace(/(.)\/$/, '$1') }),
     }),
   ],
 });

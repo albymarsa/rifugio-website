@@ -11,7 +11,9 @@ interface Props {
 
 const { title, description = 'Rifugio alpino nel cuore delle montagne. Prenota il tuo posto per vivere un\'esperienza autentica in alta quota.' } = Astro.props;
 
-const canonicalURL = new URL(Astro.url.pathname, 'https://www.rifugiorosmini.it').href;
+// Slash finale sempre presente, per coincidere con gli URL della sitemap
+const pathname = Astro.url.pathname.endsWith('/') ? Astro.url.pathname : `${Astro.url.pathname}/`;
+const canonicalURL = new URL(pathname, 'https://www.rifugiorosmini.it').href;
 ---
 
 <!doctype html>
