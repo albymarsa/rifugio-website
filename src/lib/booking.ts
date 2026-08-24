@@ -60,14 +60,27 @@ function prevDay(dateStr: string): string {
   return `${prev.getFullYear()}-${String(prev.getMonth() + 1).padStart(2, '0')}-${String(prev.getDate()).padStart(2, '0')}`;
 }
 
+/**
+ * Stati che occupano il calendario e bloccano nuove prenotazioni.
+ * Sorgente unica: gli handler API filtrano con `.in('stato', [...STATI_BLOCCANTI])`,
+ * così cambiare la regola qui la cambia ovunque. Le richieste `da_confermare`
+ * non bloccano: più soci possono chiedere le stesse date, decidono i gestori.
+ */
+export const STATI_BLOCCANTI = ['confermata'] as const;
+
 export type ExistingBooking = {
   data_arrivo: string;
   data_partenza: string;
 };
 
+export type StatefulBooking = ExistingBooking & {
+  id?: string;
+  stato?: string;
+};
+
 /**
- * Cerca una prenotazione esistente che si sovrappone all'intervallo richiesto.
- * Usa la stessa logica della query Supabase: overlap se
+ * Cerca una prenotazione esistente che si sovrappone all'intervallo richiesto,
+ * senza guardare lo stato. Usa la stessa logica della query Supabase: overlap se
  *   existing.data_arrivo < richiesta.data_partenza AND
  *   existing.data_partenza > richiesta.data_arrivo
  * (giorno di check-out esclusivo).
@@ -83,6 +96,26 @@ export function findOverlap(
     }
   }
   return null;
+}
+
+/**
+ * Cerca una prenotazione che *impedisce* l'intervallo richiesto: sovrapposta
+ * (vedi findOverlap) e in uno stato bloccante. `excludeId` serve alla conferma,
+ * che non deve considerare bloccante la prenotazione che sta confermando.
+ * Rispecchia i filtri applicati dagli handler API lato database.
+ */
+export function findBlockingOverlap(
+  existing: StatefulBooking[],
+  data_arrivo: string,
+  data_partenza: string,
+  excludeId?: string
+): StatefulBooking | null {
+  const bloccanti = existing.filter(
+    (b) =>
+      !(excludeId !== undefined && b.id === excludeId) &&
+      STATI_BLOCCANTI.includes(b.stato as (typeof STATI_BLOCCANTI)[number])
+  );
+  return findOverlap(bloccanti, data_arrivo, data_partenza) as StatefulBooking | null;
 }
 
 /** Incrementa una data YYYY-MM-DD di un giorno usando manipolazione stringa. */

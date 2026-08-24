@@ -3,7 +3,7 @@ export const prerender = false;
 import type { APIRoute } from 'astro';
 import { getAuthenticatedClient, jsonError } from '../../lib/auth';
 import { checkCsrf } from '../../lib/csrf';
-import { validateBookingDates } from '../../lib/booking';
+import { validateBookingDates, STATI_BLOCCANTI } from '../../lib/booking';
 import { sendBookingNotification } from '../../lib/email';
 
 export const POST: APIRoute = async ({ request, cookies }) => {
@@ -48,11 +48,13 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       });
     }
 
-    // Controllo sovrapposizioni: la struttura è prenotabile solo nella sua interezza
+    // Controllo sovrapposizioni: la struttura è prenotabile solo nella sua interezza.
+    // Bloccano solo le prenotazioni confermate: più richieste in attesa possono
+    // convivere sulle stesse date, saranno i gestori a scegliere quale confermare.
     const { data: overlapping } = await supabase
       .from('prenotazioni')
       .select('id')
-      .in('stato', ['confermata', 'da_confermare'])
+      .in('stato', [...STATI_BLOCCANTI])
       .lt('data_arrivo', data_partenza)
       .gt('data_partenza', data_arrivo)
       .limit(1);

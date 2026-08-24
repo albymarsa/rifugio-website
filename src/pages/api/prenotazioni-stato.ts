@@ -2,6 +2,7 @@ export const prerender = false;
 
 import type { APIRoute } from 'astro';
 import { getAuthenticatedClient, jsonError, jsonOk } from '../../lib/auth';
+import { STATI_BLOCCANTI } from '../../lib/booking';
 
 /** PATCH: Aggiorna stato prenotazione (solo fondatori) */
 export const PATCH: APIRoute = async ({ request, cookies }) => {
@@ -31,6 +32,44 @@ export const PATCH: APIRoute = async ({ request, cookies }) => {
 
     if (!['confermata', 'annullata', 'da_confermare'].includes(stato)) {
       return jsonError('Stato non valido', 400);
+    }
+
+    // La conferma è esclusiva: due prenotazioni confermate non possono sovrapporsi.
+    // Le richieste 'da_confermare' invece convivono liberamente sulle stesse date.
+    if (stato === 'confermata') {
+      const { data: richiesta, error: richiestaError } = await supabase
+        .from('prenotazioni')
+        .select('data_arrivo, data_partenza')
+        .eq('id', prenotazione_id)
+        .single();
+
+      if (richiestaError || !richiesta) {
+        return jsonError('Prenotazione non trovata', 404);
+      }
+
+      const { data: overlapping, error: overlapError } = await supabase
+        .from('prenotazioni')
+        .select('id')
+        .in('stato', [...STATI_BLOCCANTI])
+        .neq('id', prenotazione_id)
+        .lt('data_arrivo', richiesta.data_partenza)
+        .gt('data_partenza', richiesta.data_arrivo)
+        .limit(1);
+
+      // Fail-closed: senza vincolo a livello di database questo è l'unico presidio
+      // contro due conferme sovrapposte, quindi un errore di query non deve
+      // lasciar passare la conferma.
+      if (overlapError) {
+        console.error('[API prenotazioni-stato] Errore verifica sovrapposizioni:', overlapError.message);
+        return jsonError('Impossibile verificare la disponibilità delle date. Riprova.', 500);
+      }
+
+      if (overlapping && overlapping.length > 0) {
+        return jsonError(
+          'Esiste già una prenotazione confermata in quel periodo. Annullala prima di confermare questa.',
+          409
+        );
+      }
     }
 
     const { error } = await supabase

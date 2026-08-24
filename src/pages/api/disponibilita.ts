@@ -3,7 +3,7 @@ export const prerender = false;
 import type { APIRoute } from 'astro';
 import { createServiceClient } from '../../lib/supabase';
 import { jsonError, jsonOk } from '../../lib/auth';
-import { aggregateOccupancy, CAPACITA } from '../../lib/booking';
+import { aggregateOccupancy, CAPACITA, STATI_BLOCCANTI } from '../../lib/booking';
 
 /** GET: Restituisce l'occupazione aggregata per giorno di un dato mese (endpoint pubblico) */
 export const GET: APIRoute = async ({ url }) => {
@@ -36,11 +36,12 @@ export const GET: APIRoute = async ({ url }) => {
 
     const adminClient = createServiceClient();
 
-    // Trova prenotazioni che si sovrappongono al mese richiesto
+    // Trova le prenotazioni confermate che si sovrappongono al mese richiesto.
+    // Le richieste ancora 'da_confermare' non occupano il calendario.
     const { data: bookings, error } = await adminClient
       .from('prenotazioni')
       .select('data_arrivo, data_partenza, num_persone')
-      .in('stato', ['confermata', 'da_confermare'])
+      .in('stato', [...STATI_BLOCCANTI])
       .lt('data_arrivo', nextMonth)
       .gt('data_partenza', monthStart);
 
