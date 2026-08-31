@@ -56,6 +56,32 @@ test.describe('Home page', () => {
       .toBeGreaterThan(0);
   });
 
+  // Se un id dei blocchi viene rinominato, le voci dell'indice diventano link
+  // morti senza nessun errore visibile: qui si verifica che ognuna punti a un
+  // blocco realmente presente nella pagina.
+  test('indice storia: le ancore puntano a blocchi esistenti', async ({ page }) => {
+    await page.goto('/storia');
+
+    const links = page.locator('.storia__index a');
+    await expect(links).toHaveCount(3);
+
+    const hrefs = await links.evaluateAll((els) => els.map((el) => el.getAttribute('href') ?? ''));
+    for (const href of hrefs) {
+      expect(href).toMatch(/^#.+/);
+      await expect(page.locator(href)).toHaveCount(1);
+    }
+  });
+
+  // Allo statuto puntano la pagina storia, il footer e il modulo di iscrizione
+  // soci: se la pagina sparisce, tre link diventano 404.
+  test('statuto page renders e il rimando dalla storia funziona', async ({ page }) => {
+    const response = await page.goto('/statuto');
+    expect(response?.status()).toBe(200);
+
+    await page.goto('/storia');
+    await expect(page.locator('.storia__statuto a')).toHaveAttribute('href', '/statuto');
+  });
+
   test('protected route redirects to login', async ({ page }) => {
     await page.goto('/soci/');
     await expect(page).toHaveURL(/\/soci\/login/);

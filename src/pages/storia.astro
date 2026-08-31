@@ -18,6 +18,15 @@ import Layout from '../layouts/Layout.astro';
         del Veglia».
       </p>
 
+      <nav class="storia__index" aria-label="Indice della pagina">
+        <p class="storia__index-label">In questa pagina</p>
+        <ul>
+          <li><a href="#memoria-plazzer">La scoperta della casa, in una memoria di don Gino Plazzer</a></li>
+          <li><a href="#incanto-alpe">L'incanto dell'Alpe</a></li>
+          <li><a href="#associazione">Oggi: l'associazione «Amici del Veglia»</a></li>
+        </ul>
+      </nav>
+
       <!-- Documento d'archivio: memoria di don Plazzer + L'incanto dell'Alpe -->
       <article class="storia__doc">
         <p class="storia__doc-label">Da un documento d'archivio</p>
@@ -36,7 +45,7 @@ import Layout from '../layouts/Layout.astro';
           </figcaption>
         </figure>
 
-        <section class="storia__section">
+        <section class="storia__section" id="memoria-plazzer">
           <h2>Alpe Veglia «Case Paloschi» sopra Varzo</h2>
           <p class="storia__subtitle">Da una memoria di don Gino Plazzer, rosminiano</p>
 
@@ -156,7 +165,7 @@ import Layout from '../layouts/Layout.astro';
       <article class="storia__doc">
         <p class="storia__doc-label">Da un documento d'archivio</p>
 
-        <section class="storia__section">
+        <section class="storia__section" id="incanto-alpe">
           <h2>L'incanto dell'Alpe</h2>
 
           <p>
@@ -199,7 +208,7 @@ import Layout from '../layouts/Layout.astro';
 
       <!-- Voce dell'associazione: oggi -->
       <article class="storia__voice">
-        <section class="storia__section">
+        <section class="storia__section" id="associazione">
           <h2>Un nuovo passo per la casa, nasce il Rifugio Rosmini</h2>
 
           <p>
@@ -258,6 +267,14 @@ import Layout from '../layouts/Layout.astro';
         </section>
       </article>
 
+      <aside class="storia__statuto">
+        <p>
+          Finalità, soci, organi e funzionamento dell'associazione «Amici del Veglia» sono
+          descritti nel suo statuto.
+        </p>
+        <a href="/statuto" class="btn btn-outline">Leggi lo statuto</a>
+      </aside>
+
       <div class="storia__back">
         <a href="/" class="btn btn-outline">Torna alla home</a>
       </div>
@@ -276,6 +293,52 @@ import Layout from '../layouts/Layout.astro';
     line-height: 1.7;
     color: var(--color-gray);
     margin-bottom: 2.5rem;
+  }
+
+  /* Indice rapido: salta alle tre parti della pagina */
+  .storia__index {
+    max-width: 720px;
+    border-top: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-border);
+    padding: 1.25rem 0;
+    margin-bottom: 3rem;
+  }
+
+  .storia__index-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--color-gray);
+    margin-bottom: 0.75rem;
+  }
+
+  .storia__index ul {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+  }
+
+  /* Sottolineatura sempre visibile: su touch l'hover non esiste */
+  .storia__index a {
+    font-size: 0.95rem;
+    color: var(--color-dark);
+    text-decoration: underline;
+    text-decoration-color: var(--color-gray-light);
+    text-underline-offset: 4px;
+  }
+
+  .storia__index a:hover {
+    color: var(--color-black);
+    text-decoration-color: var(--color-black);
+  }
+
+  /* Bersagli dell'indice: l'header è fisso (64px), evita che il titolo finisca sotto */
+  #memoria-plazzer,
+  #incanto-alpe,
+  #associazione {
+    scroll-margin-top: 88px;
   }
 
   /* Documento d'archivio: memoria riportata da fonte esterna */
@@ -394,6 +457,20 @@ import Layout from '../layouts/Layout.astro';
     font-weight: 700;
     color: var(--color-black);
     margin-top: 1.5rem;
+  }
+
+  .storia__statuto {
+    max-width: 720px;
+    margin-top: 3rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--color-border);
+  }
+
+  .storia__statuto p {
+    font-size: 0.95rem;
+    line-height: 1.7;
+    color: var(--color-gray);
+    margin-bottom: 1.25rem;
   }
 
   .storia__back {
