@@ -5,6 +5,7 @@ import { getAuthenticatedClient, jsonError } from '../../lib/auth';
 import { checkCsrf } from '../../lib/csrf';
 import { validateBookingDates, STATI_BLOCCANTI } from '../../lib/booking';
 import { sendBookingNotification } from '../../lib/email';
+import { normalizeRequesterCodiceFiscale, validateRequesterCodiceFiscale } from '../../lib/member-validation';
 
 export const POST: APIRoute = async ({ request, cookies }) => {
   try {
@@ -38,7 +39,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     }
 
     const body = await request.json();
-    const { data_arrivo, data_partenza, note } = body;
+    const { data_arrivo, data_partenza, note, codice_fiscale } = body;
 
     const validation = validateBookingDates(data_arrivo, data_partenza, note);
     if (!validation.ok) {
@@ -47,6 +48,12 @@ export const POST: APIRoute = async ({ request, cookies }) => {
         headers: { 'Content-Type': 'application/json' },
       });
     }
+
+    // Codice fiscale del richiedente per la ricevuta del soggiorno: obbligatorio
+    // qui e non sulla scheda socio, dove resta facoltativo.
+    const codiceFiscale = normalizeRequesterCodiceFiscale(codice_fiscale);
+    const cfCheck = validateRequesterCodiceFiscale(codiceFiscale);
+    if (!cfCheck.ok) return jsonError(cfCheck.error, 400);
 
     // Controllo sovrapposizioni: la struttura è prenotabile solo nella sua interezza.
     // Bloccano solo le prenotazioni confermate: più richieste in attesa possono
@@ -74,6 +81,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       richiedente_nome: `${profilo.nome} ${profilo.cognome}`,
       richiedente_email: profilo.email,
       richiedente_telefono: profilo.telefono || null,
+      richiedente_codice_fiscale: codiceFiscale,
       stato: 'da_confermare',
       creata_da: user.id,
     }]);

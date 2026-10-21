@@ -29,6 +29,11 @@ const { profilo } = Astro.props;
     </div>
   </div>
 
+  <div class="form-group">
+    <label for="codice_fiscale">Codice fiscale (per la ricevuta) *</label>
+    <input type="text" id="codice_fiscale" name="codice_fiscale" required maxlength="20" autocomplete="off" style="text-transform: uppercase;" />
+  </div>
+
   <div class="booking-form__info">
     <p>La prenotazione è sempre per l'intera struttura (25 posti letto). Per richieste particolari scrivi a info@rifugiorosmini.it.</p>
   </div>
@@ -126,6 +131,7 @@ const { profilo } = Astro.props;
           data_arrivo: formData.get('data_arrivo'),
           data_partenza: formData.get('data_partenza'),
           note: formData.get('note') || null,
+          codice_fiscale: formData.get('codice_fiscale'),
         }),
       });
 

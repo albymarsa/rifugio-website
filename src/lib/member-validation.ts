@@ -58,6 +58,33 @@ export function validateMemberDocument(data: Record<string, unknown>): Validatio
 }
 
 /**
+ * Codice fiscale del richiedente, obbligatorio su ogni richiesta di prenotazione:
+ * serve a intestare la ricevuta del soggiorno. Sulla scheda socio invece resta
+ * facoltativo. Nessun controllo sul formato (scelta voluta): basta che sia
+ * compilato, ben formato come ogni altro dato anagrafico e lungo al massimo 16.
+ */
+/**
+ * Normalizza il codice fiscale prima di validarlo: toglie gli spazi di contorno,
+ * tipici del copia-incolla, così il limite di 16 si applica al solo codice, e lo
+ * porta in maiuscolo. I valori non stringa passano invariati, li rifiuta la validazione.
+ */
+export function normalizeRequesterCodiceFiscale(codiceFiscale: unknown): unknown {
+  return typeof codiceFiscale === 'string' ? codiceFiscale.trim().toUpperCase() : codiceFiscale;
+}
+
+export function validateRequesterCodiceFiscale(codiceFiscale: unknown): ValidationResult {
+  if (isBlank(codiceFiscale)) {
+    return { ok: false, error: 'Il codice fiscale è obbligatorio per la ricevuta' };
+  }
+  const data = { codice_fiscale: codiceFiscale };
+  const formatCheck = validateMemberFieldFormat(data);
+  if (!formatCheck.ok) return { ok: false, error: 'Codice fiscale non valido' };
+  const lengthCheck = validateMemberFieldLengths(data);
+  if (!lengthCheck.ok) return { ok: false, error: 'Codice fiscale troppo lungo (max 16 caratteri)' };
+  return { ok: true };
+}
+
+/**
  * Caratteri che non devono comparire in un dato anagrafico:
  * - `\u0000-\u001F\u007F`: controlli ASCII, a capo e tabulazioni compresi
  * - `\u2028\u2029\u0085`: separatori di riga Unicode, che spezzano la cella in

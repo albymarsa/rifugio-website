@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { validateMemberRequired, validateMemberFieldFormat, validateMemberFieldLengths, validateMemberDocument, validateConsents, TIPI_DOCUMENTO } from '../../src/lib/member-validation';
+import { validateMemberRequired, validateMemberFieldFormat, validateMemberFieldLengths, validateMemberDocument, validateConsents, normalizeRequesterCodiceFiscale, validateRequesterCodiceFiscale, TIPI_DOCUMENTO } from '../../src/lib/member-validation';
 
 describe('validateMemberRequired', () => {
   it('accetta tutti e tre i campi presenti', () => {
@@ -257,5 +257,57 @@ describe('TIPI_DOCUMENTO', () => {
   // <option> di src/components/soci/MemberForm.astro. Se cambi qui, cambia anche li'.
   it('elenca esattamente i tre tipi previsti', () => {
     expect(TIPI_DOCUMENTO).toEqual(['carta_identita', 'patente', 'passaporto']);
+  });
+});
+
+describe('validateRequesterCodiceFiscale', () => {
+  const OBBLIGATORIO = { ok: false, error: 'Il codice fiscale è obbligatorio per la ricevuta' };
+  const NON_VALIDO = { ok: false, error: 'Codice fiscale non valido' };
+  const TROPPO_LUNGO = { ok: false, error: 'Codice fiscale troppo lungo (max 16 caratteri)' };
+
+  it('rifiuta il codice fiscale mancante, vuoto o di soli spazi', () => {
+    expect(validateRequesterCodiceFiscale(undefined)).toEqual(OBBLIGATORIO);
+    expect(validateRequesterCodiceFiscale(null)).toEqual(OBBLIGATORIO);
+    expect(validateRequesterCodiceFiscale('')).toEqual(OBBLIGATORIO);
+    expect(validateRequesterCodiceFiscale('   ')).toEqual(OBBLIGATORIO);
+  });
+
+  it('rifiuta come non valido un valore non stringa, anche se "falsy"', () => {
+    expect(validateRequesterCodiceFiscale(12345)).toEqual(NON_VALIDO);
+    expect(validateRequesterCodiceFiscale({ cf: 'x' })).toEqual(NON_VALIDO);
+    expect(validateRequesterCodiceFiscale(false)).toEqual(NON_VALIDO);
+    expect(validateRequesterCodiceFiscale(0)).toEqual(NON_VALIDO);
+  });
+
+  it('rifiuta caratteri di controllo', () => {
+    expect(validateRequesterCodiceFiscale('RSSMRA80\nA01H501')).toEqual(NON_VALIDO);
+  });
+
+  it('accetta 16 caratteri e rifiuta 17', () => {
+    expect(validateRequesterCodiceFiscale('A'.repeat(16))).toEqual({ ok: true });
+    expect(validateRequesterCodiceFiscale('A'.repeat(17))).toEqual(TROPPO_LUNGO);
+  });
+
+  it('accetta un codice compilato, senza controllo di formato', () => {
+    expect(validateRequesterCodiceFiscale('RSSMRA80A01H501Z')).toEqual({ ok: true });
+    expect(validateRequesterCodiceFiscale('abc123')).toEqual({ ok: true });
+  });
+});
+
+describe('normalizeRequesterCodiceFiscale', () => {
+  it('toglie gli spazi di contorno e porta in maiuscolo', () => {
+    expect(normalizeRequesterCodiceFiscale(' rssmra80a01h501z ')).toBe('RSSMRA80A01H501Z');
+  });
+
+  it('un codice di 16 caratteri incollato con spazi intorno è accettato', () => {
+    const cf = normalizeRequesterCodiceFiscale('  RSSMRA80A01H501Z\t');
+    expect(validateRequesterCodiceFiscale(cf)).toEqual({ ok: true });
+  });
+
+  it('lascia invariati i valori non stringa', () => {
+    const obj = { cf: 'x' };
+    expect(normalizeRequesterCodiceFiscale(obj)).toBe(obj);
+    expect(normalizeRequesterCodiceFiscale(12345)).toBe(12345);
+    expect(normalizeRequesterCodiceFiscale(undefined)).toBeUndefined();
   });
 });

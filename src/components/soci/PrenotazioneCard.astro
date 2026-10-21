@@ -14,6 +14,7 @@ interface Prenotazione {
   richiedente_nome?: string;
   richiedente_email?: string;
   richiedente_telefono?: string;
+  richiedente_codice_fiscale?: string;
   stato: string;
   created_at: string;
 }
@@ -75,6 +76,7 @@ const statoLabels: Record<string, string> = {
       <span>{prenotazione.richiedente_nome}</span>
       {prenotazione.richiedente_email && <span class="pren-card__sub">{prenotazione.richiedente_email}</span>}
       {prenotazione.richiedente_telefono && <span class="pren-card__sub">{prenotazione.richiedente_telefono}</span>}
+      {prenotazione.richiedente_codice_fiscale && <span class="pren-card__sub">CF: {prenotazione.richiedente_codice_fiscale}</span>}
     </div>
   )}
 

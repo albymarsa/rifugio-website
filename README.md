@@ -183,6 +183,7 @@ CREATE TABLE prenotazioni (
   richiedente_nome TEXT NOT NULL,
   richiedente_email TEXT NOT NULL,
   richiedente_telefono TEXT,
+  richiedente_codice_fiscale TEXT,
   stato TEXT NOT NULL DEFAULT 'da_confermare'
     CHECK (stato IN ('da_confermare', 'confermata', 'annullata')),
   creata_da UUID REFERENCES auth.users(id),
@@ -281,6 +282,16 @@ CREATE POLICY "delete_own" ON prenotazioni_soci FOR DELETE
     )
   );
 ```
+
+> **Migrazione per database già esistenti** — Se la tabella `prenotazioni` è stata creata
+> prima dell'introduzione del codice fiscale del richiedente (necessario per la ricevuta del
+> soggiorno), esegui una sola volta nel **SQL Editor**, *prima* di pubblicare il sito, questa
+> riga (colonna nullable: le prenotazioni esistenti restano senza; nessuna policy RLS da
+> modificare):
+>
+> ```sql
+> ALTER TABLE prenotazioni ADD COLUMN richiedente_codice_fiscale TEXT;
+> ```
 
 ### Passo 6: Configura l'autenticazione
 
