@@ -9,7 +9,7 @@ interface Props {
   description?: string;
 }
 
-const { title, description = 'Rifugio alpino nel cuore delle montagne. Prenota il tuo posto per vivere un\'esperienza autentica in alta quota.' } = Astro.props;
+const { title, description = 'Rifugio alpino non gestito all’Alpe Veglia, prenotabile fino a 25 posti, per gruppi e famiglie' } = Astro.props;
 
 // Slash finale sempre presente, per coincidere con gli URL della sitemap
 const pathname = Astro.url.pathname.endsWith('/') ? Astro.url.pathname : `${Astro.url.pathname}/`;
@@ -29,7 +29,10 @@ const canonicalURL = new URL(pathname, 'https://www.rifugiorosmini.it').href;
     <meta property="og:url" content={canonicalURL} />
     <meta property="og:title" content="Rifugio Rosmini — Alpe Veglia" />
     <meta property="og:description" content={description} />
-    <meta property="og:image" content="https://www.rifugiorosmini.it/images/hero.jpeg" />
+    <meta property="og:image" content="https://www.rifugiorosmini.it/images/og-image.jpg" />
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
     <meta property="og:locale" content="it_IT" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <title>{title}</title>

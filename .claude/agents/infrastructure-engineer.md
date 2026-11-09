@@ -94,7 +94,7 @@ Tag OG aggiunti in **`src/layouts/Layout.astro`** (commit `caa40f1`).
 - `og:url`: **dinamico**, uguale al canonical della pagina corrente (commit `efac73c` + `5a82d0c`). Prima era hardcoded su `https://www.rifugiorosmini.it/`: condividendo `/storia` o `/sostienici` su WhatsApp l'anteprima mostrava l'URL della home.
 - `og:title`: **`Rifugio Rosmini — Alpe Veglia`** (hardcoded, non usa la prop `title` del layout)
 - `og:description`: usa la prop `description` del layout (default: descrizione del rifugio)
-- `og:image`: `https://www.rifugiorosmini.it/images/hero.jpeg` (URL assoluto richiesto)
+- `og:image`: `https://www.rifugiorosmini.it/images/og-image.jpg` (URL assoluto richiesto; immagine dedicata 1200×630, ~300 KB, con `og:image:type/width/height`. Non cancellarla dal CMS: l'anteprima resterebbe senza immagine)
 - `og:locale`: `it_IT`
 
 ### Note operative
